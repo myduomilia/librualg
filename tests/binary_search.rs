@@ -1,6 +1,7 @@
 extern crate librualg;
 
 use librualg::*;
+use std::time::Instant;
 
 #[test]
 fn binary_search() {
