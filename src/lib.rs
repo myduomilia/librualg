@@ -4,3 +4,5 @@
 
 /// Binary search algorithm.
 pub mod binary_search;
+/// String-searching algorithms.
+pub mod string;

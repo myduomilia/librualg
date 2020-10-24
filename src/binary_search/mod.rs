@@ -32,7 +32,7 @@ pub fn lower_bound<T>(container: &[T], key: &T) -> Option<usize>
 }
 
 /// Binary search algorithm.
-/// Returns the leftmost position of the item to find.
+/// Returns the rightmost position of the item to find.
 /// It is necessary that the container is pre-sorted
 ///```
 /// use librualg::binary_search::upper_bound;
