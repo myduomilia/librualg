@@ -3,6 +3,7 @@
 
 ### LIst of algorithms:
 - Binary search algorithm.
+- Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
 
 ### Example
 ```rust
