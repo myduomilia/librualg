@@ -63,14 +63,10 @@ fn prefix_function(src: &str) -> Vec<usize> {
         while j > 0 && arr[i] != arr[j] {
             j = pi[j - 1];
         }
-        match arr[i] == arr[j] {
-            true => {
-                pi[i] = j + 1;
-            },
-            false => {
-                pi[i] = j;
-            }
+        if arr[i] == arr[j] {
+            j += 1;
         }
+        pi[i] = j;
     }
     pi
 }
@@ -80,4 +76,5 @@ fn test_prefix_function() {
     assert_eq!(prefix_function("abacaba"), [0, 0, 1, 0, 1, 2, 3]);
     assert_eq!(prefix_function("b"), [0]);
     assert_eq!(prefix_function("aaaaa"), [0, 1, 2, 3, 4]);
+    assert_eq!(prefix_function(""), []);
 }
