@@ -6,3 +6,5 @@
 pub mod binary_search;
 /// String-searching algorithms.
 pub mod string;
+/// Combinatorics algorithms
+pub mod combinatorics;
