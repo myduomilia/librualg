@@ -1,5 +1,6 @@
 ## Collection of basic algorithms for everyday development
 [![Build Status](https://travis-ci.org/myduomilia/librualg.svg?branch=master)](https://travis-ci.org/myduomilia/librualg)
+[![Rust](https://github.com/myduomilia/librualg/actions/workflows/rust.yml/badge.svg)](https://github.com/myduomilia/librualg/actions/workflows/rust.yml)
 
 ### LIst of algorithms:
 - Binary search algorithm.
