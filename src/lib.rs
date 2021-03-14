@@ -8,3 +8,5 @@ pub mod binary_search;
 pub mod string;
 /// Combinatorics algorithms
 pub mod combinatorics;
+/// Graph algorithms
+pub mod graph;

@@ -4,9 +4,19 @@
 [![crates.io](https://img.shields.io/crates/v/librualg)](https://crates.io/crates/librualg)
 
 ### LIst of algorithms:
-- Binary search algorithm.
+<hr/>
+
+#### Search algorithms:
+- Binary search
+
+#### String Algorithms:
 - Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
-- Algorithm of permutation generation
+#### Combinatorics and enumeration algorithms
+- Permutation generation
+#### Graph algorithms:
+- bfs (Breadth-First Search)
+
+<hr/>
 
 ### Example
 ```rust
