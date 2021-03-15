@@ -2,6 +2,17 @@ use std::cmp::Ordering;
 use std::collections::{BTreeSet, VecDeque, BTreeMap};
 use std::option::Option::Some;
 
+enum Color {
+    GREY = 1,
+    BLACK = 2
+}
+
+pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
+    parent: Option<Indent>,
+    time_in: Option<u32>,
+    time_out: Option<u32>
+}
+
 #[derive(Clone)]
 struct Edge <Indent, W> where Indent: Eq + Ord + Clone {
     to: Indent,
@@ -55,21 +66,21 @@ impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
     /// assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
     /// ```
 
-    pub fn bfs(&self, from: Indent) -> BTreeMap::<Indent, Option<Indent>> {
+    pub fn bfs(&self, from: Indent) -> BTreeMap::<Indent, VertexProperties<Indent>> {
         let mut queue = VecDeque::new();
-        let mut parents = BTreeMap::<Indent, Option<Indent>>::new();
+        let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
         let mut visits = BTreeSet::new();
 
 
         if self.adj.get(&from).is_some() {
             queue.push_back(&from);
             visits.insert(&from);
-            parents.insert(from.clone(), None);
+            parents.insert(from.clone(), VertexProperties {parent: None, time_in: None, time_out: None});
             while let Some(vertex) = queue.pop_front(){
                 if self.adj.get(&vertex).is_some() {
                     for edge in self.adj.get(&vertex).unwrap().iter() {
                         if !visits.contains(&edge.to) {
-                            parents.insert(edge.to.clone(), Some(vertex.clone()));
+                            parents.insert(edge.to.clone(), VertexProperties {parent: Some(vertex.clone()), time_in: None, time_out: None});
                             queue.push_back(&edge.to);
                             visits.insert(&edge.to);
                         }
@@ -77,6 +88,45 @@ impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
                 }
             }
         }
+        parents
+    }
+
+    fn _dfs(&self, from: Indent, timer: &mut u32,  parents: &mut BTreeMap::<Indent, VertexProperties<Indent>>, colors: &mut BTreeMap::<Indent, Color>) {
+        *timer += 1;
+        parents.insert(from.clone(), VertexProperties{parent: None, time_in: Some(*timer), time_out: None});
+        colors.insert(from.clone(), Color::GREY);
+        if self.adj.get(&from).is_some() {
+            for edge in self.adj.get(&from).unwrap().iter() {
+                if colors.get(&edge.to).is_none() {
+                    parents.insert(edge.to.clone(), VertexProperties{parent: Some(from.clone()), time_in: None, time_out: None});
+                    self._dfs(edge.to.clone(), timer, parents, colors);
+                }
+            }
+        }
+        *(colors.get_mut(&from).unwrap()) = Color::BLACK;
+        *timer += 1;
+        parents.get_mut(&from).unwrap().time_out = Some(*timer);
+    }
+
+    /// DFS (Depth-First Search) algorithm.
+    /// Return an ancestor vector along the graph traversal path
+    ///```
+    /// use librualg::graph::Graph;
+    ///
+    /// let mut graph = Graph::new();
+    /// graph.add_oriented_edge(1, 2, 0);
+    /// graph.add_oriented_edge(2, 3, 0);
+    /// graph.add_oriented_edge(3, 5, 0);
+    ///
+    /// let res = graph.bfs(1);
+    /// assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
+    /// ```
+
+    pub fn dfs(&self, from: Indent) -> BTreeMap::<Indent, VertexProperties<Indent>> {
+        let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
+        let mut colors = BTreeMap::<Indent, Color>::new();
+        let mut timer = 0;
+        self._dfs(from, &mut timer, &mut parents, &mut colors);
         parents
     }
 
@@ -114,17 +164,17 @@ impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
     /// assert_eq!(graph.search_path(101, &parents), None);
     /// ```
 
-    pub fn search_path(&self, mut target: Indent, parents: &BTreeMap<Indent, Option<Indent>>) -> Option<Vec<Indent>> {
+    pub fn search_path(&self, mut target: Indent, parents: &BTreeMap<Indent, VertexProperties<Indent>>) -> Option<Vec<Indent>> {
         if !parents.contains_key(&target) {
             return None;
         }
         let mut path = vec![target.clone()];
-        while let Some(parent) = parents.get(&target) {
-            if parent.is_none() {
+        while let Some(next) = parents.get(&target) {
+            if next.parent.is_none() {
                 break;
             }
-            path.push(parent.clone().unwrap());
-            target = parent.clone().unwrap();
+            path.push(next.parent.clone().unwrap());
+            target = next.parent.clone().unwrap();
         }
         path.reverse();
         Some(path)
@@ -164,4 +214,15 @@ fn test_bfs_with_string() {
     graph.add_oriented_edge("8".to_string(), "17".to_string(), 0);
     let parents = graph.bfs("1".to_string());
     assert_eq!(graph.search_path("5".to_string(), &parents).unwrap(), vec!["1".to_string(), "2".to_string(), "5".to_string()]);
+}
+
+#[test]
+fn test_dfs() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge(1, 2, 0);
+    graph.add_oriented_edge(2, 3, 0);
+    graph.add_oriented_edge(3, 5, 0);
+
+    let res = graph.bfs(1);
+    assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
 }

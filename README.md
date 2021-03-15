@@ -15,6 +15,7 @@
 - Permutation generation
 #### Graph algorithms:
 - bfs (Breadth-First Search)
+- dfs (Depth-First Search)
 
 <hr/>
 
