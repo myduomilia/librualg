@@ -1,6 +1,6 @@
-use std::cmp::Ordering;
-use std::collections::{BTreeSet, VecDeque, BTreeMap};
+use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
+use std::cmp::Ordering;
 
 enum Color {
     GREY = 1,
@@ -14,53 +14,33 @@ pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
 }
 
 #[derive(Clone)]
-struct Edge <Indent, W> where Indent: Eq + Ord + Clone {
+struct Edge <Indent> where Indent: Eq + Ord + Clone {
     to: Indent,
-    weight: W,
+    weight: f32,
 }
 
-impl <Indent, W> std::cmp::PartialEq for Edge <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
-    fn eq(&self, other: &Edge<Indent, W>) -> bool {
-        self.to == other.to && self.weight == other.weight
-    }
+pub struct Graph <Indent> where Indent: Eq + Ord + Clone {
+    adj: BTreeMap<Indent, Vec<Edge<Indent>>>,
 }
 
-impl <Indent, W> Ord for Edge <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.to.cmp(&other.to)
-    }
-}
-
-impl <Indent, W> PartialOrd for Edge <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl <Indent, W> Eq for Edge <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {}
-
-pub struct Graph <Indent, W> where Indent: Eq + Ord +Clone {
-    adj: BTreeMap<Indent, BTreeSet<Edge<Indent, W>>>,
-}
-
-impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
+impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     pub fn new() -> Self {
         let graph = Graph { adj: BTreeMap::new() };
         graph
     }
 
     /// BFS (Breadth-First Search) algorithm.
-    /// Return an ancestor vector along the graph traversal path
+    /// Returns an ancestor vector along the graph traversal path
     ///```
     /// use librualg::graph::Graph;
     ///
     /// let mut graph = Graph::new();
-    /// graph.add_oriented_edge(1, 2, 0);
-    /// graph.add_oriented_edge(2, 3, 0);
-    /// graph.add_oriented_edge(2, 4, 0);
-    /// graph.add_oriented_edge(2, 5, 0);
-    /// graph.add_oriented_edge(4, 8, 0);
-    /// graph.add_oriented_edge(8, 17, 0);
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(2, 4, 0.0);
+    /// graph.add_oriented_edge(2, 5, 0.0);
+    /// graph.add_oriented_edge(4, 8, 0.0);
+    /// graph.add_oriented_edge(8, 17, 0.0);
     /// let parents = graph.bfs(1);
     /// assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
     /// assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
@@ -109,14 +89,14 @@ impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
     }
 
     /// DFS (Depth-First Search) algorithm.
-    /// Return an ancestor vector along the graph traversal path
+    /// Returns an ancestor vector along the graph traversal path
     ///```
     /// use librualg::graph::Graph;
     ///
     /// let mut graph = Graph::new();
-    /// graph.add_oriented_edge(1, 2, 0);
-    /// graph.add_oriented_edge(2, 3, 0);
-    /// graph.add_oriented_edge(3, 5, 0);
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(3, 5, 0.0);
     ///
     /// let res = graph.bfs(1);
     /// assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
@@ -130,32 +110,101 @@ impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
         parents
     }
 
-    /// Add a new edge to the graph
-    pub fn add_oriented_edge(&mut self, from: Indent, to: Indent, weight: W) {
+    /// Dijkstra algorithm.
+    /// Returns an ancestor vector along the graph traversal path and distances to the other vertexs
+    ///```
+    /// use librualg::graph::Graph;
+    ///
+    /// let mut graph = Graph::new();
+    /// graph.add_oriented_edge(1, 2, 2.0);
+    /// graph.add_oriented_edge(2, 3, 5.0);
+    /// graph.add_oriented_edge(3, 5, 7.0);
+    /// graph.add_oriented_edge(1, 5, 19.0);
+    ///
+    /// let (parents, distances) = graph.dijkstra(1);
+    /// assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 3, 5]);
+    /// assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
+    /// assert_eq!(*distances.get(&5).unwrap(), 14.0);
+    /// ```
+
+
+    pub fn dijkstra(&self, from: Indent) -> (BTreeMap::<Indent, VertexProperties<Indent>>, BTreeMap::<Indent, f32>) {
+        let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
+        let mut visits = BTreeSet::<Indent>::new();
+        let mut distances = BTreeMap::<Indent, f32>::new();
+
+        struct D<Indent> {
+            node: Indent,
+            dist: f32,
+        }
+
+        impl <Indent> std::cmp::PartialEq for D<Indent> {
+            fn eq(&self, other: &D<Indent>) -> bool {
+                self.dist == other.dist
+            }
+        }
+
+        impl <Indent> Eq for D<Indent> {}
+
+        impl <Indent> std::cmp::Ord for D<Indent> {
+            fn cmp(&self, other: &Self) -> Ordering {
+                other.dist.partial_cmp(&self.dist).unwrap()
+            }
+        }
+
+        impl <Indent> std::cmp::PartialOrd for D <Indent> {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(other.dist.partial_cmp(&self.dist).unwrap())
+            }
+        }
+
+
+        let mut heap = BinaryHeap::<D<Indent>>::new();
+        distances.insert(from.clone(), 0.0);
+        heap.push(D{ node: from, dist: 0.0});
+        while !heap.is_empty() {
+            let d = heap.pop().unwrap();
+            visits.insert(d.node.clone());
+            if self.adj.get(&d.node).is_some() {
+                for edge in self.adj.get(&d.node).unwrap() {
+                    if !visits.contains(&edge.to){
+                        if &edge.weight + &d.dist < *distances.get(&edge.to).unwrap_or(&std::f32::MAX) {
+                            parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None});
+                            distances.insert(edge.to.clone(), edge.weight + d.dist);
+                            heap.push(D{node: edge.to.clone(), dist: *distances.get(&edge.to).unwrap()});
+                        }
+                    }
+                }
+            }
+        }
+        (parents, distances)
+    }
+
+    /// Adds a new oriented edge to the graph
+    pub fn add_oriented_edge(&mut self, from: Indent, to: Indent, weight: f32) {
         match self.adj.get_mut(&from) {
             Some(ref mut vertex) => {
-                vertex.insert(Edge { to, weight});
+                vertex.push(Edge { to, weight});
             }
             None => {
-                let mut set = BTreeSet::new();
-                set.insert(Edge { to, weight});
-                self.adj.insert(from, set);
+                let seq = vec![Edge { to, weight}];
+                self.adj.insert(from, seq);
             }
         }
     }
 
-    /// Return the path in the graph between two vertices based on the ancestor vector
-    /// Return None if the path does not exist
+    /// Returns the path in the graph between two vertices based on the ancestor vector
+    /// Returns None if the path does not exist
     /// ```
     /// use librualg::graph::Graph;
     ///
     /// let mut graph = Graph::new();
-    /// graph.add_oriented_edge(1, 2, 0);
-    /// graph.add_oriented_edge(2, 3, 0);
-    /// graph.add_oriented_edge(2, 4, 0);
-    /// graph.add_oriented_edge(2, 5, 0);
-    /// graph.add_oriented_edge(4, 8, 0);
-    /// graph.add_oriented_edge(8, 17, 0);
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(2, 4, 0.0);
+    /// graph.add_oriented_edge(2, 5, 0.0);
+    /// graph.add_oriented_edge(4, 8, 0.0);
+    /// graph.add_oriented_edge(8, 17, 0.0);
     /// let parents = graph.bfs(1);
     /// assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
     /// assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
@@ -183,18 +232,18 @@ impl <Indent, W> Graph <Indent, W> where Indent: Eq + Ord + Clone, W: Eq + Ord {
 
 #[test]
 fn test_bfs() {
-    let mut graph = Graph::<usize, u8>::new();
-    graph.add_oriented_edge(1, 2, 0);
-    graph.add_oriented_edge(2, 3, 0);
-    graph.add_oriented_edge(2, 4, 0);
-    graph.add_oriented_edge(2, 5, 0);
-    graph.add_oriented_edge(4, 8, 0);
-    graph.add_oriented_edge(8, 17, 0);
+    let mut graph = Graph::<usize>::new();
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(2, 4, 0.0);
+    graph.add_oriented_edge(2, 5, 0.0);
+    graph.add_oriented_edge(4, 8, 0.0);
+    graph.add_oriented_edge(8, 17, 0.0);
     let parents = graph.bfs(1);
     assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
     assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
 
-    graph.add_oriented_edge(17, 1, 0);
+    graph.add_oriented_edge(17, 1, 0.0);
     let parents = graph.bfs(1);
     assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
     assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
@@ -205,13 +254,13 @@ fn test_bfs() {
 
 #[test]
 fn test_bfs_with_string() {
-    let mut graph = Graph::<String, u8>::new();
-    graph.add_oriented_edge("1".to_string(), "2".to_string(), 0);
-    graph.add_oriented_edge("2".to_string(), "3".to_string(), 0);
-    graph.add_oriented_edge("2".to_string(), "4".to_string(), 0);
-    graph.add_oriented_edge("2".to_string(), "5".to_string(), 0);
-    graph.add_oriented_edge("4".to_string(), "8".to_string(), 0);
-    graph.add_oriented_edge("8".to_string(), "17".to_string(), 0);
+    let mut graph = Graph::<String>::new();
+    graph.add_oriented_edge("1".to_string(), "2".to_string(), 0.0);
+    graph.add_oriented_edge("2".to_string(), "3".to_string(), 0.0);
+    graph.add_oriented_edge("2".to_string(), "4".to_string(), 0.0);
+    graph.add_oriented_edge("2".to_string(), "5".to_string(), 0.0);
+    graph.add_oriented_edge("4".to_string(), "8".to_string(), 0.0);
+    graph.add_oriented_edge("8".to_string(), "17".to_string(), 0.0);
     let parents = graph.bfs("1".to_string());
     assert_eq!(graph.search_path("5".to_string(), &parents).unwrap(), vec!["1".to_string(), "2".to_string(), "5".to_string()]);
 }
@@ -219,10 +268,34 @@ fn test_bfs_with_string() {
 #[test]
 fn test_dfs() {
     let mut graph = Graph::new();
-    graph.add_oriented_edge(1, 2, 0);
-    graph.add_oriented_edge(2, 3, 0);
-    graph.add_oriented_edge(3, 5, 0);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 5, 0.0);
 
     let res = graph.bfs(1);
     assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
+}
+
+#[test]
+fn test_dijkstra() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge(1, 2, 2.0);
+    graph.add_oriented_edge(2, 3, 5.0);
+    graph.add_oriented_edge(3, 5, 7.0);
+    graph.add_oriented_edge(1, 5, 19.0);
+
+    let (parents, distances) = graph.dijkstra(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 3, 5]);
+    assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
+    assert_eq!(*distances.get(&5).unwrap(), 14.0);
+
+
+    let mut graph = Graph::new();
+    graph.add_oriented_edge(1, 2, 2.0);
+    graph.add_oriented_edge(2, 3, 5.0);
+    graph.add_oriented_edge(3, 1, 7.0);
+
+    let (parents, distances) = graph.dijkstra(1);
+    assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
+    assert_eq!(*distances.get(&3).unwrap(), 7.0);
 }
