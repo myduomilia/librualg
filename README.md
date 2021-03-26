@@ -9,6 +9,12 @@
 #### Search algorithms:
 - Binary search
 
+#### Segment Tree:
+- RSQ (Range Sum Query)
+- RMQMin (Range Minimum Query)
+- RMQMax (Range Maximum Query)
+- RMQMin (Range Minimum Query)
+
 #### String Algorithms:
 - Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
 #### Combinatorics and enumeration algorithms

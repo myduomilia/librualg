@@ -10,3 +10,5 @@ pub mod string;
 pub mod combinatorics;
 /// Graph algorithms
 pub mod graph;
+/// Segment Tree
+pub mod segment_tree;
