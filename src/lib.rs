@@ -12,3 +12,5 @@ pub mod combinatorics;
 pub mod graph;
 /// Segment Tree
 pub mod segment_tree;
+/// Mathematics algorithms
+pub mod math;

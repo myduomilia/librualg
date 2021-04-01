@@ -24,6 +24,9 @@
 - dfs (Depth-First Search)
 - dijkstra
 
+#### Mathematics algorithms:
+- The Greatest Common Divisor (GCD)
+
 <hr/>
 
 ### Example
