@@ -5,7 +5,7 @@ before_script:
   - rustup component add rustfmt
   - rustup component add clippy
   - cargo install cargo-audit
-  - cargo-tarpaulin
+  - cargo install cargo-tarpaulin
 
 script:
   - cargo build --verbose
