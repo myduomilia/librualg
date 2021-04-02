@@ -4,3 +4,6 @@ rust:
 script:
   - cargo build --verbose
   - cargo test --verbose
+  - cargo tarpaulin --verbose --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+after_success:
+  - npm run coveralls
