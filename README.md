@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/myduomilia/librualg.svg?branch=master)](https://travis-ci.org/myduomilia/librualg)
 [![Rust](https://github.com/myduomilia/librualg/actions/workflows/rust.yml/badge.svg)](https://github.com/myduomilia/librualg/actions/workflows/rust.yml)
 [![crates.io](https://img.shields.io/crates/v/librualg)](https://crates.io/crates/librualg)
+[![Coverage Status](https://coveralls.io/repos/github/myduomilia/librualg/badge.svg?branch=master)](https://coveralls.io/github/myduomilia/librualg?branch=master)
 
 ### LIst of algorithms:
 <hr/>
