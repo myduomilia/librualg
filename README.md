@@ -17,6 +17,8 @@
 
 #### String Algorithms:
 - Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
+- Trie or prefix tree
+
 #### Combinatorics and enumeration algorithms
 - Permutation generation
 #### Graph algorithms:

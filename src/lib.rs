@@ -14,3 +14,5 @@ pub mod graph;
 pub mod segment_tree;
 /// Mathematics algorithms
 pub mod math;
+/// Trie or  prefix tree
+pub mod trie;
