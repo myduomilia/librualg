@@ -19,6 +19,7 @@
 #### String Algorithms:
 - Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
 - Trie or prefix tree
+- Levenshtein distance (Metric of the difference between two symbol sequences)
 
 #### Combinatorics and enumeration algorithms
 - Permutation generation

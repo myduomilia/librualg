@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 /// Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm).
 /// Return all occurrences of a substring.
 ///```
@@ -27,6 +29,14 @@ pub fn kmp(t: &str, p: &str) -> Vec<usize> {
     res
 }
 
+#[test]
+fn test_kmp(){
+    assert_eq!(kmp("ababcxabdabcxabcxabcde", "abcxabcde"), vec![13]);
+    assert_eq!(kmp("a", "ab"), vec![]);
+    assert_eq!(kmp("aaaaa", "a"), vec![0, 1, 2, 3, 4]);
+    assert_eq!(kmp("abcdabcd", "abc"), vec![0, 4]);
+}
+
 /// Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm).
 /// Return first occurrence of a substring.
 ///```
@@ -53,6 +63,54 @@ pub fn kmp_first(t: &str, p: &str) -> Option<usize> {
         }
     }
     None
+}
+
+
+
+#[test]
+fn test_kmp_first(){
+    assert_eq!(kmp_first("ababcxabdabcxabcxabcde", "abcxabcde"), Some(13));
+    assert_eq!(kmp_first("a", "ab"), None);
+    assert_eq!(kmp_first("aaaaa", "a"), Some(0));
+    assert_eq!(kmp_first("ebcdabcd", "abc"), Some(4));
+}
+
+/// Levenshtein distance (Metric of the difference between two symbol sequences).
+///```
+/// use librualg::string::levenshtein_distance;
+///
+/// assert_eq!(levenshtein_distance("POLYNOMIAL", "EXPONENTIAL", 1, 1, 1), 6);
+/// assert_eq!(levenshtein_distance("aaa", "aaa", 1, 1, 1), 0);
+/// ```
+pub fn levenshtein_distance(first: &str, second: &str, delete_cost: u32, insert_cost: u32, replace_cost: u32) -> u32 {
+    let first = first.as_bytes();
+    let second = second.as_bytes();
+    let mut dist_old = vec![0; first.len() + 1];
+    for j in 1..(first.len() + 1) {
+        dist_old[j] = dist_old[j - 1] + insert_cost;
+    }
+    for i in 1..second.len() + 1 {
+        let mut dist = vec![0; first.len() + 1];
+        dist[0] = dist_old[0] + delete_cost;
+        for j in 1..(first.len() + 1) {
+            if second[i - 1] != first[j - 1] {
+                dist[j] = min(min(dist_old[j] + delete_cost, dist_old[j - 1] + insert_cost), dist[j - 1] + replace_cost);
+            } else {
+                dist[j] = dist_old[j - 1];
+            }
+        }
+        dist_old = dist;
+    }
+    dist_old[first.len()]
+}
+
+#[test]
+fn test_levenshtein_distance(){
+    assert_eq!(levenshtein_distance("POLYNOMIAL", "EXPONENTIAL", 1, 1, 1), 6);
+    assert_eq!(levenshtein_distance("abcdasdasd", "cddabcd", 1, 1, 1), 6);
+    assert_eq!(levenshtein_distance("", "", 1, 1, 1), 0);
+    assert_eq!(levenshtein_distance("aaa", "aaa", 1, 1, 1), 0);
+    assert_eq!(levenshtein_distance("", "aaa", 1, 1, 1), 3);
 }
 
 fn prefix_function(src: &str) -> Vec<usize> {
