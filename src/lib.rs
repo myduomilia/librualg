@@ -16,3 +16,5 @@ pub mod segment_tree;
 pub mod math;
 /// Trie or  prefix tree
 pub mod trie;
+/// Huffman Coding
+pub mod huffman;
