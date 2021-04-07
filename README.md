@@ -31,6 +31,9 @@
 #### Mathematics algorithms:
 - The Greatest Common Divisor (GCD)
 
+#### Data compression:
+- Huffman algorithm
+
 <hr/>
 
 ### Example
