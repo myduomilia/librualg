@@ -9,7 +9,9 @@ enum Color {
 
 pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
     parent: Option<Indent>,
+    #[allow(dead_code)]
     time_in: Option<u32>,
+    #[allow(dead_code)]
     time_out: Option<u32>
 }
 
@@ -23,10 +25,15 @@ pub struct Graph <Indent> where Indent: Eq + Ord + Clone {
     adj: BTreeMap<Indent, Vec<Edge<Indent>>>,
 }
 
+impl<Indent> Default for Graph<Indent> where Indent: Eq + Ord + Clone {
+    fn default() -> Self {
+        Graph { adj: BTreeMap::new() }
+    }
+}
+
 impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     pub fn new() -> Self {
-        let graph = Graph { adj: BTreeMap::new() };
-        graph
+        Graph::default()
     }
 
     /// BFS (Breadth-First Search) algorithm.
@@ -55,7 +62,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         if self.adj.get(&from).is_some() {
             queue.push_back(&from);
             visits.insert(&from);
-            parents.insert(from.clone(), VertexProperties {parent: None, time_in: None, time_out: None});
+            parents.insert(Clone::clone(&from), VertexProperties {parent: None, time_in: None, time_out: None});
             while let Some(vertex) = queue.pop_front(){
                 if self.adj.get(&vertex).is_some() {
                     for edge in self.adj.get(&vertex).unwrap().iter() {
@@ -167,12 +174,10 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
             visits.insert(d.node.clone());
             if self.adj.get(&d.node).is_some() {
                 for edge in self.adj.get(&d.node).unwrap() {
-                    if !visits.contains(&edge.to){
-                        if &edge.weight + &d.dist < *distances.get(&edge.to).unwrap_or(&std::f32::MAX) {
-                            parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None});
-                            distances.insert(edge.to.clone(), edge.weight + d.dist);
-                            heap.push(D{node: edge.to.clone(), dist: *distances.get(&edge.to).unwrap()});
-                        }
+                    if !visits.contains(&edge.to) && edge.weight + d.dist < *distances.get(&edge.to).unwrap_or(&std::f32::MAX) {
+                        parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None});
+                        distances.insert(edge.to.clone(), edge.weight + d.dist);
+                        heap.push(D{node: edge.to.clone(), dist: *distances.get(&edge.to).unwrap()});
                     }
                 }
             }

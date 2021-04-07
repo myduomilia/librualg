@@ -20,10 +20,15 @@ pub struct Trie {
     leaf: bool,
 }
 
+impl Default for Trie {
+    fn default() -> Self {
+        Trie{ children: BTreeMap::new(), leaf: false}
+    }
+}
 
 impl Trie {
     pub fn new() -> Self {
-        Trie{ children: BTreeMap::new(), leaf: false}
+        Trie::default()
     }
 
     pub fn insert(&mut self, s: &str) {

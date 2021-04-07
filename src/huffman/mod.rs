@@ -51,7 +51,7 @@ impl Huffman {
             let first = values.pop();
             let second = first.clone();
             let weight = first.as_ref().unwrap().weight;
-            values.push(Pair{ weight, edge: Edge{value: None, children: Box::new(Some([first.unwrap().edge.clone(), second.unwrap().edge]))}});
+            values.push(Pair{ weight, edge: Edge{value: None, children: Box::new(Some([first.unwrap().edge, second.unwrap().edge]))}});
         }
         while values.len() > 1 {
             let first = values.pop();
@@ -74,7 +74,7 @@ impl Huffman {
             for ch in text.as_bytes() {
                 for bit in encode_table.get(ch).unwrap().as_bytes() {
                     if *bit == b'1' {
-                        let mask = 128 >> idx % 8;
+                        let mask = 128 >> (idx % 8);
                         data[idx / 8] |= mask
                     }
                     idx += 1;
@@ -89,7 +89,7 @@ impl Huffman {
         let mut res = String::new();
         let mut ch = String::new();
         while idx < bytes.len() * 8 {
-            let mask = 128 >> idx % 8;
+            let mask = 128 >> (idx % 8);
             if bytes[idx / 8] & mask == mask {
                 ch = ch.add("1");
             } else {
@@ -108,11 +108,9 @@ impl Huffman {
 fn extract_character_codes(edge: &Edge, code: String, table: &mut BTreeMap<u8, String>) {
     if let Some(ch) = edge.value {
         table.insert(ch, code);
-    } else {
-        if let Some(ref children) = *edge.children {
-            extract_character_codes(&children[0], code.clone().add("0"), table);
-            extract_character_codes(&children[1], code.clone().add("1"), table);
-        }
+    } else if let Some(ref children) = *edge.children {
+        extract_character_codes(&children[0], code.clone().add("0"), table);
+        extract_character_codes(&children[1], code.add("1"), table);
     }
 }
 

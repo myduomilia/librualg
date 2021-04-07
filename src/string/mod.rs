@@ -12,13 +12,12 @@ pub fn kmp(t: &str, p: &str) -> Vec<usize> {
     let mut res = vec![];
     let pr = prefix_function(p);
     let mut idx = 0;
-    let t_bytes = t.as_bytes();
-    let p_bytes = p.as_bytes();
-    for i in 0..t.len() {
-        while idx > 0  && p_bytes[idx] != t_bytes[i]{
+    let pattern = p.as_bytes();
+    for (i, value) in t.as_bytes().iter().enumerate() {
+        while idx > 0  && pattern[idx] != *value{
             idx = pr[idx - 1];
         }
-        if p_bytes[idx] == t_bytes[i] {
+        if pattern[idx] == *value {
             idx += 1;
         }
         if idx == p.len() {
@@ -49,13 +48,12 @@ fn test_kmp(){
 pub fn kmp_first(t: &str, p: &str) -> Option<usize> {
     let pr = prefix_function(p);
     let mut idx = 0;
-    let t_bytes = t.as_bytes();
-    let p_bytes = p.as_bytes();
-    for i in 0..t.len() {
-        while idx > 0  && p_bytes[idx] != t_bytes[i]{
+    let pattern = p.as_bytes();
+    for (i, value) in t.as_bytes().iter().enumerate() {
+        while idx > 0  && pattern[idx] != *value{
             idx = pr[idx - 1];
         }
-        if p_bytes[idx] == t_bytes[i] {
+        if pattern[idx] == *value {
             idx += 1;
         }
         if idx == p.len() {

@@ -1,4 +1,3 @@
-use librualg::huffman;
 use librualg::huffman::Huffman;
 
 #[test]

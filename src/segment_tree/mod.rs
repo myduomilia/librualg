@@ -81,7 +81,7 @@ impl <T> RSQ<T>  where T: Default + Clone + Copy + Add<Output = T> {
     /// ```
     pub fn update(&mut self, mut idx: usize, value: T) {
         if !self.data.is_empty() && idx < self.len {
-            idx = idx + self.data.len() / 2;
+            idx += self.data.len() / 2;
             self.data[idx] = value;
             while idx >= 1 {
                 if idx % 2 == 0 {
@@ -89,7 +89,7 @@ impl <T> RSQ<T>  where T: Default + Clone + Copy + Add<Output = T> {
                 } else {
                     self.data[idx / 2] = self.data[idx] + self.data[idx - 1];
                 }
-                idx = idx / 2;
+                idx /= 2;
             }
         }
     }
@@ -122,7 +122,7 @@ impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
             dst[n / 2 + i] = *value;
         }
         for i in (1..n / 2).rev() {
-            dst[i] = Ord::min(dst[2 * i].clone(), dst[2 * i + 1].clone());
+            dst[i] = Ord::min(dst[2 * i], dst[2 * i + 1]);
         }
         RMQMin { data: dst, len: src.len() }
     }
@@ -175,7 +175,7 @@ impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
     /// ```
     pub fn update(&mut self, mut idx: usize, value: T) {
         if !self.data.is_empty() && idx < self.len {
-            idx = idx + self.data.len() / 2;
+            idx += self.data.len() / 2;
             self.data[idx] = value;
             while idx >= 1 {
                 if idx % 2 == 0 {
@@ -183,7 +183,7 @@ impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
                 } else {
                     self.data[idx / 2] = min(self.data[idx], self.data[idx - 1]);
                 }
-                idx = idx / 2;
+                idx /= 2;
             }
         }
     }
@@ -216,7 +216,7 @@ impl <T> RMQMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
             dst[n / 2 + i] = *value;
         }
         for i in (1..n / 2).rev() {
-            dst[i] = Ord::max(dst[2 * i].clone(), dst[2 * i + 1].clone());
+            dst[i] = Ord::max(dst[2 * i], dst[2 * i + 1]);
         }
         RMQMax { data: dst, len: src.len() }
     }
@@ -269,7 +269,7 @@ impl <T> RMQMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
     /// ```
     pub fn update(&mut self, mut idx: usize, value: T) {
         if !self.data.is_empty() && idx < self.len {
-            idx = idx + self.data.len() / 2;
+            idx += self.data.len() / 2;
             self.data[idx] = value;
             while idx >= 1 {
                 if idx % 2 == 0 {
@@ -277,7 +277,7 @@ impl <T> RMQMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
                 } else {
                     self.data[idx / 2] = max(self.data[idx], self.data[idx - 1]);
                 }
-                idx = idx / 2;
+                idx /= 2;
             }
         }
     }
@@ -327,7 +327,7 @@ fn test_rsq() {
     assert_eq!(tree.query(3, 11), None);
     assert_eq!(tree.query(3, 5), None);
 
-    let mut tree = RSQ::<i32>::new(&vec![]);
+    let tree = RSQ::<i32>::new(&vec![]);
     assert_eq!(tree.query(0, 0), None);
 }
 
