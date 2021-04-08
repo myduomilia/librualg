@@ -111,6 +111,69 @@ fn test_levenshtein_distance(){
     assert_eq!(levenshtein_distance("", "aaa", 1, 1, 1), 3);
 }
 
+/// Search for the minimum string period
+///```
+/// use librualg::string::minimum_string_period;
+///
+/// assert_eq!(minimum_string_period("abcabcabca"), "abc");
+/// assert_eq!(minimum_string_period("abcdefg"), "abcdefg");
+/// ```
+
+pub fn minimum_string_period(src: &str) ->&str {
+    for (idx, value) in z_function(src).iter().enumerate() {
+        if value + idx == src.len() && src.len() % idx == 0 {
+            return &src[..idx];
+        } else if value + idx == src.len() {
+            let k = src.len() % idx;
+            if src[..k] == src[src.len() - k..] {
+                return &src[..idx];
+            }
+        }
+    }
+    src
+}
+
+#[test]
+fn test_minimum_string_period() {
+    assert_eq!(minimum_string_period("abcabcabca"), "abc");
+    assert_eq!(minimum_string_period("abcdefg"), "abcdefg");
+    assert_eq!(minimum_string_period("abcabcabcd"), "abcabcabcd");
+    assert_eq!(minimum_string_period(""), "");
+}
+
+/// Search for distinct substring
+///```
+/// use librualg::string::distinct_substrings;
+///
+/// assert_eq!(distinct_substrings("a"), vec!["a"]);
+/// assert_eq!(distinct_substrings("aaaa"), vec!["a", "aa", "aaa", "aaaa"]);
+/// let mut values = distinct_substrings("abaaba");
+/// values.sort();
+/// assert_eq!(values, vec!["a", "aa", "aab", "aaba", "ab", "aba", "abaa", "abaab", "abaaba", "b", "ba", "baa", "baab", "baaba"]);
+/// ```
+pub fn distinct_substrings(s: &str)->Vec<&str> {
+    let mut seq = vec![];
+    for i in (0..s.len()).rev() {
+        let pr = z_function(&s[i ..s.len()]);
+        let res = s.len() - i - pr.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+        for j in 0..res {
+            seq.push(&s[i..s.len() - j]);
+        }
+    }
+    seq
+}
+
+#[test]
+fn test_distinct_substrings(){
+    assert_eq!(distinct_substrings("a"), vec!["a"]);
+    assert_eq!(distinct_substrings("aaaa"), vec!["a", "aa", "aaa", "aaaa"]);
+    assert_eq!(distinct_substrings(""), Vec::<&str>::new());
+    let mut values = distinct_substrings("abaaba");
+    values.sort();
+    assert_eq!(values, vec!["a", "aa", "aab", "aaba", "ab", "aba", "abaa", "abaab", "abaaba", "b", "ba", "baa", "baab", "baaba"]);
+    assert_eq!(distinct_substrings("abacabadabacaba").len(), 85);
+}
+
 fn prefix_function(src: &str) -> Vec<usize> {
     let mut pi = vec![0; src.len()];
     let arr = src.as_bytes();
@@ -133,4 +196,30 @@ fn test_prefix_function() {
     assert_eq!(prefix_function("b"), [0]);
     assert_eq!(prefix_function("aaaaa"), [0, 1, 2, 3, 4]);
     assert_eq!(prefix_function(""), []);
+}
+
+pub fn z_function(src: &str) -> Vec<usize> {
+    let mut z = vec![0; src.len()];
+    let mut l = 0;
+    let mut r = 0;
+
+    let arr = src.as_bytes();
+    for i in 1..src.len() {
+        if i <= r {
+            z[i] = min(r - i + 1, z[i - l]);
+        }
+        while i + z[i] < arr.len() && arr[z[i]] == arr[i + z[i]]{
+            z[i] += 1;
+        }
+        if i + z[i] - 1 > r {
+            l = i;
+            r = i + z[i] - 1;
+        }
+    }
+    z
+}
+
+#[test]
+fn test_z_function_ascii() {
+    assert_eq!(z_function("abacaba"), [0, 0, 1, 0, 3, 0, 1]);
 }

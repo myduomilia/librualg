@@ -27,3 +27,19 @@ fn test_levenshtein_distance(){
     assert_eq!(levenshtein_distance("aaa", "aaa", 1, 1, 1), 0);
     assert_eq!(levenshtein_distance("", "aaa", 1, 1, 1), 3);
 }
+
+#[test]
+fn test_minimum_string_period() {
+    assert_eq!(string::minimum_string_period("abcabcabca"), "abc");
+    assert_eq!(string::minimum_string_period("abcdefg"), "abcdefg");
+}
+
+#[test]
+fn test_distinct_substrings(){
+    assert_eq!(string::distinct_substrings("a"), vec!["a"]);
+    assert_eq!(string::distinct_substrings("aaaa"), vec!["a", "aa", "aaa", "aaaa"]);
+    assert_eq!(string::distinct_substrings(""), Vec::<&str>::new());
+    let mut values = string::distinct_substrings("abaaba");
+    values.sort();
+    assert_eq!(values, vec!["a", "aa", "aab", "aaba", "ab", "aba", "abaa", "abaab", "abaaba", "b", "ba", "baa", "baab", "baaba"]);
+}

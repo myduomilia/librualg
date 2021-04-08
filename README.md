@@ -20,6 +20,8 @@
 - Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
 - Trie or prefix tree
 - Levenshtein distance (Metric of the difference between two symbol sequences)
+- Search for the minimum string period 
+- Search distinct substrings
 
 #### Combinatorics and enumeration algorithms
 - Permutation generation
