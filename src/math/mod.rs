@@ -86,7 +86,7 @@ pub fn pow_mod(mut value: u64, mut n: u64, m: u64) -> u64 {
 }
 
 #[test]
-fn test_fast_pow_mod() {
+fn test_pow_mod() {
     assert_eq!(pow_mod(5, 100, 7), 2);
     assert_eq!(pow_mod(3, 90, 5), 4);
 }
