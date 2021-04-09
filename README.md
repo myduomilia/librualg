@@ -32,6 +32,9 @@
 
 #### Mathematics algorithms:
 - The Greatest Common Divisor (GCD)
+- Fast pow
+- Fast pow by module
+- Checking a Number for Simplicity (Fermat's test)
 
 #### Data compression:
 - Huffman algorithm
