@@ -3,8 +3,8 @@ use std::option::Option::Some;
 use std::cmp::Ordering;
 
 enum Color {
-    GREY = 1,
-    BLACK = 2
+    Grey = 1,
+    Black = 2
 }
 
 pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
@@ -81,7 +81,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     fn _dfs(&self, from: Indent, timer: &mut u32,  parents: &mut BTreeMap::<Indent, VertexProperties<Indent>>, colors: &mut BTreeMap::<Indent, Color>) {
         *timer += 1;
         parents.insert(from.clone(), VertexProperties{parent: None, time_in: Some(*timer), time_out: None});
-        colors.insert(from.clone(), Color::GREY);
+        colors.insert(from.clone(), Color::Grey);
         if self.adj.get(&from).is_some() {
             for edge in self.adj.get(&from).unwrap().iter() {
                 if colors.get(&edge.to).is_none() {
@@ -90,7 +90,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
                 }
             }
         }
-        *(colors.get_mut(&from).unwrap()) = Color::BLACK;
+        *(colors.get_mut(&from).unwrap()) = Color::Black;
         *timer += 1;
         parents.get_mut(&from).unwrap().time_out = Some(*timer);
     }
@@ -174,7 +174,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
             visits.insert(d.node.clone());
             if self.adj.get(&d.node).is_some() {
                 for edge in self.adj.get(&d.node).unwrap() {
-                    if !visits.contains(&edge.to) && edge.weight + d.dist < *distances.get(&edge.to).unwrap_or(&std::f32::MAX) {
+                    if !visits.contains(&edge.to) && edge.weight + d.dist < *distances.get(&edge.to).unwrap_or(&f32::MAX) {
                         parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None});
                         distances.insert(edge.to.clone(), edge.weight + d.dist);
                         heap.push(D{node: edge.to.clone(), dist: *distances.get(&edge.to).unwrap()});

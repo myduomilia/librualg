@@ -18,3 +18,5 @@ pub mod math;
 pub mod trie;
 /// Huffman Coding
 pub mod huffman;
+/// Bloom filter
+pub mod bloom_filter;

@@ -4,23 +4,23 @@ use std::cmp::{min, max};
 
 /// Range Sum Query
 
-pub struct RSQ <T: Default + Clone + Copy + Add<Output = T>> {
+pub struct Rsq<T: Default + Clone + Copy + Add<Output = T>> {
     data: Vec<T>,
     len: usize,
 }
 
-impl <T> RSQ<T>  where T: Default + Clone + Copy + Add<Output = T> {
+impl <T> Rsq<T>  where T: Default + Clone + Copy + Add<Output = T> {
 
     /// Build Segment Tree (RSQ) from slice.
     ///```
-    /// use librualg::segment_tree::RSQ;
+    /// use librualg::segment_tree::Rsq;
     ///
     /// let arr = [1, 2, 3, 4, 5];
-    /// let tree = RSQ::new(&arr);
+    /// let tree = Rsq::new(&arr);
     /// ```
     pub fn new(src: &[T]) -> Self {
         if src.is_empty() {
-            return RSQ { data: vec![], len: src.len() };
+            return Rsq { data: vec![], len: src.len() };
         }
         let n = determine_necessary_size_tree(src.len());
         let mut dst = vec![T::default(); n];
@@ -30,15 +30,15 @@ impl <T> RSQ<T>  where T: Default + Clone + Copy + Add<Output = T> {
         for i in (1..n / 2).rev() {
             dst[i] = dst[2 * i] + dst[2 * i + 1];
         }
-        RSQ { data: dst, len: src.len() }
+        Rsq { data: dst, len: src.len() }
     }
 
     /// Returns the sum on the interval l to r
     ///```
-    /// use librualg::segment_tree::RSQ;
+    /// use librualg::segment_tree::Rsq;
     ///
     /// let arr = [1, 2, 3, 4, 5];
-    /// let tree = RSQ::new(&arr);
+    /// let tree = Rsq::new(&arr);
     ///
     /// assert_eq!(tree.query(0, 4).unwrap(), 15);
     /// assert_eq!(tree.query(1, 4).unwrap(), 14);
@@ -71,9 +71,9 @@ impl <T> RSQ<T>  where T: Default + Clone + Copy + Add<Output = T> {
 
     /// Update value by index
     ///```
-    /// use librualg::segment_tree::RSQ;
+    /// use librualg::segment_tree::Rsq;
     /// let arr = [1, 2, 3, 4, 5];
-    /// let mut tree = RSQ::new(&arr);
+    /// let mut tree = Rsq::new(&arr);
     ///
     /// assert_eq!(tree.query(0, 4).unwrap(), 15);
     /// tree.update(1, 7);
@@ -97,24 +97,24 @@ impl <T> RSQ<T>  where T: Default + Clone + Copy + Add<Output = T> {
 
 /// Range Minimum Query
 
-pub struct RMQMin <T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord > {
+pub struct RmqMin<T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord > {
     data: Vec<T>,
     len: usize,
 }
 
-impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord {
+impl <T> RmqMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord {
 
     /// Build Segment Tree (RMQMin) from slice.
     ///```
-    /// use librualg::segment_tree::{RMQMin, SegmentTreeMin, SegmentTreeMax};
+    /// use librualg::segment_tree::{RmqMin, SegmentTreeMin, SegmentTreeMax};
     /// use std::prelude::v1::*;
     ///
     /// let arr = [1, 2, 3, 4, 5];
-    /// let tree = RMQMin::new(&arr);
+    /// let tree = RmqMin::new(&arr);
     /// ```
     pub fn new(src: &[T]) -> Self {
         if src.is_empty() {
-            return RMQMin { data: vec![], len: src.len() };
+            return RmqMin { data: vec![], len: src.len() };
         }
         let n = determine_necessary_size_tree(src.len());
         let mut dst = vec![T::maximal(); n];
@@ -124,15 +124,15 @@ impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
         for i in (1..n / 2).rev() {
             dst[i] = Ord::min(dst[2 * i], dst[2 * i + 1]);
         }
-        RMQMin { data: dst, len: src.len() }
+        RmqMin { data: dst, len: src.len() }
     }
 
     /// Returns the minimal on the interval l to r
     ///```
-    /// use librualg::segment_tree::{RSQ, RMQMin};
+    /// use librualg::segment_tree::{Rsq, RmqMin};
     ///
     /// let arr = [1, 2, 3, 4, 5];
-    /// let tree = RMQMin::new(&arr);
+    /// let tree = RmqMin::new(&arr);
     ///
     /// assert_eq!(tree.query(0, 4).unwrap(), 1);
     /// assert_eq!(tree.query(1, 4).unwrap(), 2);
@@ -165,9 +165,9 @@ impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
 
     /// Update value by index
     ///```
-    /// use librualg::segment_tree::{RMQMin};
+    /// use librualg::segment_tree::{RmqMin};
     /// let arr = [1, 2, 3, 4, 5];
-    /// let mut tree = RMQMin::new(&arr);
+    /// let mut tree = RmqMin::new(&arr);
     ///
     /// assert_eq!(tree.query(0, 4).unwrap(), 1);
     /// tree.update(0, 7);
@@ -191,24 +191,24 @@ impl <T> RMQMin<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
 
 /// Range Maximum Query
 
-pub struct RMQMax <T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord > {
+pub struct RmqMax<T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord > {
     data: Vec<T>,
     len: usize,
 }
 
-impl <T> RMQMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord {
+impl <T> RmqMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTreeMax + Ord {
 
     /// Build Segment Tree (RMQMax) from slice.
     ///```
-    /// use librualg::segment_tree::{RMQMin, SegmentTreeMin, SegmentTreeMax, RMQMax};
+    /// use librualg::segment_tree::{RmqMin, SegmentTreeMin, SegmentTreeMax, RmqMax};
     /// use std::prelude::v1::*;
     ///
     /// let arr = [1, 2, 3, 4, 5];
-    /// let tree = RMQMax::new(&arr);
+    /// let tree = RmqMax::new(&arr);
     /// ```
     pub fn new(src: &[T]) -> Self {
         if src.is_empty() {
-            return RMQMax { data: vec![], len: src.len() };
+            return RmqMax { data: vec![], len: src.len() };
         }
         let n = determine_necessary_size_tree(src.len());
         let mut dst = vec![T::minimal(); n];
@@ -218,15 +218,15 @@ impl <T> RMQMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
         for i in (1..n / 2).rev() {
             dst[i] = Ord::max(dst[2 * i], dst[2 * i + 1]);
         }
-        RMQMax { data: dst, len: src.len() }
+        RmqMax { data: dst, len: src.len() }
     }
 
     /// Returns the maximum on the interval l to r
     ///```
-    /// use librualg::segment_tree::{RSQ, RMQMax};
+    /// use librualg::segment_tree::{Rsq, RmqMax};
     ///
     /// let arr = [1, 2, 3, 4, 5];
-    /// let tree = RMQMax::new(&arr);
+    /// let tree = RmqMax::new(&arr);
     ///
     /// assert_eq!(tree.query(0, 4).unwrap(), 5);
     /// assert_eq!(tree.query(1, 4).unwrap(), 5);
@@ -259,9 +259,9 @@ impl <T> RMQMax<T>  where T: Default + Clone + Copy + SegmentTreeMin + SegmentTr
 
     /// Update value by index
     ///```
-    /// use librualg::segment_tree::{RMQMax};
+    /// use librualg::segment_tree::{RmqMax};
     /// let arr = [1, 2, 3, 4, 5];
-    /// let mut tree = RMQMax::new(&arr);
+    /// let mut tree = RmqMax::new(&arr);
     ///
     /// assert_eq!(tree.query(0, 4).unwrap(), 5);
     /// tree.update(0, 7);
@@ -301,20 +301,20 @@ fn determine_necessary_size_tree(count: usize) -> usize {
 
 impl SegmentTreeMin for i32 {
     fn minimal() -> i32 {
-        std::i32::MIN
+        i32::MIN
     }
 }
 
 impl SegmentTreeMax for i32 {
     fn maximal() -> i32 {
-        std::i32::MAX
+        i32::MAX
     }
 }
 
 #[test]
 fn test_rsq() {
     let arr = [1, 2, 3, 4, 5];
-    let tree = RSQ::new(&arr);
+    let tree = Rsq::new(&arr);
 
     assert_eq!(tree.query(4, 4).unwrap(), 5);
 
@@ -327,14 +327,14 @@ fn test_rsq() {
     assert_eq!(tree.query(3, 11), None);
     assert_eq!(tree.query(3, 5), None);
 
-    let tree = RSQ::<i32>::new(&vec![]);
+    let tree = Rsq::<i32>::new(&vec![]);
     assert_eq!(tree.query(0, 0), None);
 }
 
 #[test]
 fn test_rsq_update() {
     let arr = [1, 2, 3, 4, 5];
-    let mut tree = RSQ::new(&arr);
+    let mut tree = Rsq::new(&arr);
 
     assert_eq!(tree.query(0, 4).unwrap(), 15);
     tree.update(1, 7);
@@ -350,7 +350,7 @@ fn test_rsq_update() {
 #[test]
 fn test_rmq_max() {
     let arr = [1, 2, 3, 4, 5];
-    let tree = RMQMax::new(&arr);
+    let tree = RmqMax::new(&arr);
 
     assert_eq!(tree.query(0, 4).unwrap(), 5);
     assert_eq!(tree.query(1, 4).unwrap(), 5);
@@ -362,7 +362,7 @@ fn test_rmq_max() {
 #[test]
 fn test_rmq_max_update() {
     let arr = [1, 2, 3, 4, 5];
-    let mut tree = RMQMax::new(&arr);
+    let mut tree = RmqMax::new(&arr);
     assert_eq!(tree.query(0, 4).unwrap(), 5);
     tree.update(0, 7);
     assert_eq!(tree.query(0, 4).unwrap(), 7);
@@ -371,7 +371,7 @@ fn test_rmq_max_update() {
 #[test]
 fn test_rmq_min() {
     let arr = [1, 2, 3, 4, 5];
-    let tree = RMQMin::new(&arr);
+    let tree = RmqMin::new(&arr);
 
     assert_eq!(tree.query(0, 4).unwrap(), 1);
     assert_eq!(tree.query(1, 4).unwrap(), 2);
@@ -383,7 +383,7 @@ fn test_rmq_min() {
 #[test]
 fn test_rmq_min_update() {
     let arr = [1, 2, 3, 4, 5];
-    let mut tree = RMQMin::new(&arr);
+    let mut tree = RmqMin::new(&arr);
     assert_eq!(tree.query(0, 4).unwrap(), 1);
     tree.update(0, 7);
     assert_eq!(tree.query(0, 4).unwrap(), 2);

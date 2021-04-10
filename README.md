@@ -9,6 +9,7 @@
 
 #### Search algorithms:
 - Binary search
+- Bloom Filter
 
 #### Segment Tree:
 - RSQ (Range Sum Query)

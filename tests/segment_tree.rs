@@ -1,12 +1,12 @@
 extern crate librualg;
 
 use librualg::*;
-use librualg::segment_tree::{RMQMin, RMQMax};
+use librualg::segment_tree::{RmqMin, RmqMax};
 
 #[test]
 fn test_rsq() {
     let arr = [1, 2, 3, 4, 5];
-    let tree = segment_tree::RSQ::new(&arr);
+    let tree = segment_tree::Rsq::new(&arr);
 
     assert_eq!(tree.query(0, 4).unwrap(), 15);
     assert_eq!(tree.query(1, 4).unwrap(), 14);
@@ -16,14 +16,14 @@ fn test_rsq() {
     assert_eq!(tree.query(3, 11), None);
 
     let arr: Vec<i32> = vec![];
-    let tree = segment_tree::RSQ::new(&arr);
+    let tree = segment_tree::Rsq::new(&arr);
     assert_eq!(tree.query(0, 0), None);
 }
 
 #[test]
 fn test_rmq_min() {
     let arr = [1, 2, 3, 4, 5];
-    let tree = RMQMin::new(&arr);
+    let tree = RmqMin::new(&arr);
 
     assert_eq!(tree.query(0, 4).unwrap(), 1);
     assert_eq!(tree.query(1, 4).unwrap(), 2);
@@ -37,7 +37,7 @@ fn test_rmq_min() {
 #[test]
 fn test_rmq_max() {
     let arr = [1, 2, 3, 4, 5];
-    let tree = RMQMax::new(&arr);
+    let tree = RmqMax::new(&arr);
 
     assert_eq!(tree.query(0, 4).unwrap(), 5);
     assert_eq!(tree.query(1, 4).unwrap(), 5);
