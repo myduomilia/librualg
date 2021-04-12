@@ -43,3 +43,9 @@ fn test_distinct_substrings(){
     values.sort();
     assert_eq!(values, vec!["a", "aa", "aab", "aaba", "ab", "aba", "abaa", "abaab", "abaaba", "b", "ba", "baa", "baab", "baaba"]);
 }
+
+#[test]
+fn test_suffix_array() {
+    assert_eq!(string::suffix_array("ababba$").0, vec![6, 5, 0, 2, 4, 1, 3]);
+    assert_eq!(string::suffix_array("bababa$").0, vec![6, 5, 3, 1, 4, 2, 0]);
+}

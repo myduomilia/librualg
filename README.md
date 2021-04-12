@@ -23,6 +23,7 @@
 - Levenshtein distance (Metric of the difference between two symbol sequences)
 - Search for the minimum string period 
 - Search distinct substrings
+- Suffix Array
 
 #### Combinatorics and enumeration algorithms
 - Permutation generation

@@ -223,3 +223,137 @@ pub fn z_function(src: &str) -> Vec<usize> {
 fn test_z_function_ascii() {
     assert_eq!(z_function("abacaba"), [0, 0, 1, 0, 3, 0, 1]);
 }
+
+/// Sufix Array
+///```
+/// use librualg::string::suffix_array;
+///
+/// assert_eq!(suffix_array("ababba$").0, vec![6, 5, 0, 2, 4, 1, 3]);
+/// assert_eq!(suffix_array("bababa$").0, vec![6, 5, 3, 1, 4, 2, 0]);
+/// ```
+pub fn suffix_array(src: &str) -> (Vec<usize>, Vec<usize>) {
+
+    use std::cmp::Ordering;
+
+    #[derive(Eq, Copy, Clone, Default)]
+    struct Pair<T>
+        where T: std::cmp::Ord {
+        first: T,
+        second: usize,
+    }
+
+    impl<T> Ord for Pair<T>
+        where T: std::cmp::Ord {
+        fn cmp(&self, other: &Self) -> Ordering {
+            if self.first.eq(&other.first){
+                self.second.cmp(&other.second)
+            }else {
+                self.first.cmp(&other.first)
+            }
+        }
+    }
+
+    impl <T> PartialOrd for Pair<T>
+        where T: std::cmp::Ord {
+        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+
+    impl <T> PartialEq for Pair<T>
+        where T: std::cmp::Ord {
+        fn eq(&self, other: &Self) -> bool {
+            self.first == other.first && self.second == other.second
+        }
+    }
+
+    fn radix_sort(mut arr: Vec<Pair<Pair<usize>>>) -> Vec<Pair<Pair<usize>>> {
+        let length = arr.len();
+
+        {
+            let mut cnt = vec![0; length];
+            for value in &arr {
+                cnt[value.first.second] += 1;
+            }
+            let mut arr_new: Vec<Pair<Pair<usize>>> = vec![Default::default(); length];
+            let mut pos = vec![0; length];
+            for i in 1..length {
+                pos[i] = pos[i -1] + cnt[i - 1];
+            }
+            for value in &arr {
+                let idx = value.first.second;
+                arr_new[pos[idx]] = *value;
+                pos[idx] += 1;
+            }
+            arr = arr_new;
+        }
+        {
+            let mut cnt = vec![0; length];
+            for value in &arr {
+                cnt[value.first.first] += 1;
+            }
+            let mut arr_new = vec![Default::default(); length];
+            let mut pos = vec![0; length];
+            for i in 1..length {
+                pos[i] = pos[i -1] + cnt[i - 1];
+            }
+            for value in arr {
+                let idx = value.first.first;
+                arr_new[pos[idx]] = value;
+                pos[idx] += 1;
+            }
+            arr = arr_new;
+        }
+        arr
+    }
+
+    let bytes = src.as_bytes();
+    let length = src.len();
+    let mut suffix_array = vec![0; length];
+    let mut classes = vec![0; length];
+    {
+        let mut a: Vec<Pair<u8>> = vec![Default::default(); length];
+        for (i, ch) in bytes.iter().enumerate() {
+            a[i] = Pair{first: *ch, second: i};
+        }
+        a.sort();
+        for i in 0..length {
+            suffix_array[i] = a[i].second;
+        }
+        classes[suffix_array[0]] = 0;
+        for i in 1..length {
+            if a[i].first == a[i - 1].first {
+                classes[suffix_array[i]] = classes[suffix_array[i - 1]];
+            }else {
+                classes[suffix_array[i]] = classes[suffix_array[i - 1]] + 1;
+            }
+        }
+    }
+    let mut k = 0;
+    while (1 << k) < length {
+        let mut a = vec![Default::default(); length];
+        for i in 0..length {
+            a[i] = Pair{first: Pair {first: classes[i], second: classes[(i + (1 << k)) % length]}, second: i};
+        }
+        a = radix_sort(a);
+        for i in 0..length {
+            suffix_array[i] = a[i].second;
+        }
+        classes[suffix_array[0]] = 0;
+        for i in 1..length {
+            if a[i].first == a[i - 1].first {
+                classes[suffix_array[i]] = classes[suffix_array[i - 1]];
+            }else {
+                classes[suffix_array[i]] = classes[suffix_array[i - 1]] + 1;
+            }
+        }
+        k += 1;
+    }
+    (suffix_array, classes)
+}
+
+#[test]
+fn test_suffix_array() {
+    assert_eq!(suffix_array("ababba$").0, vec![6, 5, 0, 2, 4, 1, 3]);
+    assert_eq!(suffix_array("bababa$").0, vec![6, 5, 3, 1, 4, 2, 0]);
+}
