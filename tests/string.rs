@@ -49,3 +49,14 @@ fn test_suffix_array() {
     assert_eq!(string::suffix_array("ababba$").0, vec![6, 5, 0, 2, 4, 1, 3]);
     assert_eq!(string::suffix_array("bababa$").0, vec![6, 5, 3, 1, 4, 2, 0]);
 }
+
+#[test]
+fn test_lcp() {
+    let (p, c) = string::suffix_array("ababba$");
+    let data = string::LCP::build(&p, &c, "ababba$");
+    assert_eq!(data.lcp(0, 5), Some(1));
+    assert_eq!(data.lcp(0, 1), Some(0));
+    assert_eq!(data.lcp(1, 4), Some(2));
+    assert_eq!(data.lcp(4, 1), Some(2));
+
+}

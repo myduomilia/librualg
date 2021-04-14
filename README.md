@@ -24,6 +24,7 @@
 - Search for the minimum string period 
 - Search distinct substrings
 - Suffix Array
+- The Longest Common Prefix
 
 #### Combinatorics and enumeration algorithms
 - Permutation generation

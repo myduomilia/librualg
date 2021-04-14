@@ -1,4 +1,6 @@
-use std::cmp::min;
+use std::cmp::{min, max};
+use crate::segment_tree::{RmqMin, SegmentTreeMin, SegmentTreeMax};
+use std::collections::BTreeMap;
 
 /// Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm).
 /// Return all occurrences of a substring.
@@ -356,4 +358,82 @@ pub fn suffix_array(src: &str) -> (Vec<usize>, Vec<usize>) {
 fn test_suffix_array() {
     assert_eq!(suffix_array("ababba$").0, vec![6, 5, 0, 2, 4, 1, 3]);
     assert_eq!(suffix_array("bababa$").0, vec![6, 5, 3, 1, 4, 2, 0]);
+}
+
+/// Longest Common Prefix
+///```
+/// use librualg::string::{LCP, suffix_array};
+///
+/// let (p, c) = suffix_array("ababba$");
+/// let data = LCP::build(&p, &c, "ababba$");
+/// assert_eq!(data.lcp(0, 5), Some(1));
+/// assert_eq!(data.lcp(1, 4), Some(2));
+/// ```
+pub struct LCP<'a> {
+    data: RmqMin<usize>,
+    suffix_array: (&'a [usize], &'a [usize]),
+    pos_array: BTreeMap<usize, usize>
+}
+
+impl<'a> LCP<'a> {
+    pub fn build(p: &'a[usize], c: &'a[usize], s: &str) -> Self {
+        let mut lcp = vec![0; s.len()];
+        let bytes = s.as_bytes();
+        let mut k = 0;
+        for i in 0.. s.len() - 1 {
+            let pi = c[i];
+            let j = p[pi - 1];
+            while bytes[i + k] == bytes[j + k] {
+                k += 1;
+            }
+            lcp[pi] = k;
+            if k > 0 {
+                k = max(k - 1, 0);
+            }
+        }
+        let mut pos = BTreeMap::new();
+        for i in 0..p.len() {
+            pos.insert(p[i], i);
+        }
+        LCP{data: RmqMin::new(&lcp), suffix_array: (p, c), pos_array: pos }
+    }
+
+    pub fn lcp(&self, i: usize, j: usize) -> Option<usize> {
+        impl SegmentTreeMin for usize {
+            fn minimal() -> usize {
+                usize::MIN
+            }
+        }
+
+        impl SegmentTreeMax for usize {
+            fn maximal() -> usize {
+                usize::MAX
+            }
+        }
+        if let Some(pos_i) = self.pos_array.get(&i) {
+            if let Some(pos_j) = self.pos_array.get(&j) {
+                if *pos_i == *pos_j {
+                    return Some(self.suffix_array.0.len() - i - 1);
+                }
+                return self.data.query(min(*pos_i, *pos_j) + 1, max(*pos_i, *pos_j));
+            }
+        }
+        None
+    }
+}
+
+#[test]
+fn test_lcp() {
+    let (p, c) = suffix_array("ababba$");
+    let data = LCP::build(&p, &c, "ababba$");
+    assert_eq!(data.lcp(0, 5), Some(1));
+    assert_eq!(data.lcp(0, 1), Some(0));
+    assert_eq!(data.lcp(1, 4), Some(2));
+    assert_eq!(data.lcp(3, 4), Some(1));
+    assert_eq!(data.lcp(4, 1), Some(2));
+    assert_eq!(data.lcp(1, 11), None);
+
+    assert_eq!(data.lcp(3, 3), Some(3));
+    assert_eq!(data.lcp(0, 0), Some(6));
+
 }
