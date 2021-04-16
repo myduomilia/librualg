@@ -17,6 +17,10 @@
 - RMQMax (Range Maximum Query)
 - RMQMin (Range Minimum Query)
 
+#### Sparse Tables:
+- SparseTableMin (Range Minimum Queries) 
+- SparseTableMax (Range Maximum Queries)
+
 #### String Algorithms:
 - Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm)
 - Trie or prefix tree

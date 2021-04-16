@@ -20,3 +20,5 @@ pub mod trie;
 pub mod huffman;
 /// Bloom filter
 pub mod bloom_filter;
+/// Sparse table
+pub mod sparse_table;

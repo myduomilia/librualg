@@ -362,27 +362,28 @@ fn test_suffix_array() {
 
 /// Longest Common Prefix
 ///```
-/// use librualg::string::{LCP, suffix_array};
+/// use librualg::string::{Lcp, suffix_array};
 ///
 /// let (p, c) = suffix_array("ababba$");
-/// let data = LCP::build(&p, &c, "ababba$");
+/// let data = Lcp::build(&p, &c, "ababba$");
 /// assert_eq!(data.lcp(0, 5), Some(1));
 /// assert_eq!(data.lcp(1, 4), Some(2));
 /// ```
-pub struct LCP<'a> {
+pub struct Lcp<'a> {
     data: RmqMin<usize>,
     suffix_array: (&'a [usize], &'a [usize]),
     pos_array: BTreeMap<usize, usize>
 }
 
-impl<'a> LCP<'a> {
-    pub fn build(p: &'a[usize], c: &'a[usize], s: &str) -> Self {
-        let mut lcp = vec![0; s.len()];
-        let bytes = s.as_bytes();
+#[allow(clippy::many_single_char_names)]
+impl<'a> Lcp<'a> {
+    pub fn build(suffix_array: &'a[usize], classes: &'a[usize], text: &str) -> Self {
+        let mut lcp = vec![0; text.len()];
+        let bytes = text.as_bytes();
         let mut k = 0;
-        for i in 0.. s.len() - 1 {
-            let pi = c[i];
-            let j = p[pi - 1];
+        for i in 0.. text.len() - 1 {
+            let pi = classes[i];
+            let j = suffix_array[pi - 1];
             while bytes[i + k] == bytes[j + k] {
                 k += 1;
             }
@@ -392,10 +393,10 @@ impl<'a> LCP<'a> {
             }
         }
         let mut pos = BTreeMap::new();
-        for i in 0..p.len() {
-            pos.insert(p[i], i);
+        for (i, item) in suffix_array.iter().enumerate() {
+            pos.insert(*item, i);
         }
-        LCP{data: RmqMin::new(&lcp), suffix_array: (p, c), pos_array: pos }
+        Lcp {data: RmqMin::new(&lcp), suffix_array: (suffix_array, classes), pos_array: pos }
     }
 
     pub fn lcp(&self, i: usize, j: usize) -> Option<usize> {
@@ -425,7 +426,7 @@ impl<'a> LCP<'a> {
 #[test]
 fn test_lcp() {
     let (p, c) = suffix_array("ababba$");
-    let data = LCP::build(&p, &c, "ababba$");
+    let data = Lcp::build(&p, &c, "ababba$");
     assert_eq!(data.lcp(0, 5), Some(1));
     assert_eq!(data.lcp(0, 1), Some(0));
     assert_eq!(data.lcp(1, 4), Some(2));

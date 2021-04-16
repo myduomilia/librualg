@@ -53,7 +53,7 @@ fn test_suffix_array() {
 #[test]
 fn test_lcp() {
     let (p, c) = string::suffix_array("ababba$");
-    let data = string::LCP::build(&p, &c, "ababba$");
+    let data = string::Lcp::build(&p, &c, "ababba$");
     assert_eq!(data.lcp(0, 5), Some(1));
     assert_eq!(data.lcp(0, 1), Some(0));
     assert_eq!(data.lcp(1, 4), Some(2));
