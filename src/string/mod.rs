@@ -1,6 +1,6 @@
 use std::cmp::{min, max};
 use crate::segment_tree::{RmqMin, SegmentTreeMin, SegmentTreeMax};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap};
 
 /// Knuth–Morris–Pratt string-searching algorithm (or KMP algorithm).
 /// Return all occurrences of a substring.
@@ -437,4 +437,127 @@ fn test_lcp() {
     assert_eq!(data.lcp(3, 3), Some(3));
     assert_eq!(data.lcp(0, 0), Some(6));
 
+}
+
+/// String hashing function
+///```
+/// use librualg::string::hash;
+///
+/// assert_eq!(hash("abcdabcd"), 2842022591228);
+/// ```
+pub fn hash(s: &str) -> u64 {
+    let mut k = 1;
+    let mut res = 0u64;
+    for ch in s.as_bytes() {
+        res = res.wrapping_add((*ch as u64).wrapping_mul(k));
+        k =  k.wrapping_mul(31);
+    }
+    res
+}
+
+#[test]
+fn test_hash() {
+    hash("");
+    hash("a");
+    hash("abc");
+}
+
+/// Search for a common substring
+///```
+/// use librualg::string::common_substring;
+///
+/// assert_eq!(common_substring("aba", "cabdd"), Some("ab"));
+/// ```
+
+pub fn common_substring<'a> (a: &'a str, b: &'a str) -> Option<&'a str> {
+    if a.is_empty() || b.is_empty() {
+        return None;
+    }
+    let mut p: Vec<u64> = vec![1; max(a.len(), b.len())];
+    let mut h1: Vec<u64> = vec![0; a.len()];
+    let mut h2: Vec<u64> = vec![0; b.len()];
+    for idx in 1..p.len() {
+        p[idx] = p[idx - 1].wrapping_mul(31);
+    }
+    for (idx, ch) in a.as_bytes().iter().enumerate() {
+        h1[idx] = (*ch as u64).wrapping_mul(p[idx]);
+        if idx != 0 {
+            h1[idx] = h1[idx].wrapping_add(h1[idx - 1]);
+        }
+    }
+    for (idx, ch) in b.as_bytes().iter().enumerate() {
+        h2[idx] = (*ch as u64).wrapping_mul(p[idx]);
+        if idx != 0 {
+            h2[idx] = h2[idx].wrapping_add(h2[idx - 1]);
+        }
+    }
+    let mut res = None;
+    let mut l = 0;
+    let mut r = min(a.len(), b.len()) - 1;
+    while l < r {
+        let mid = r - (r - l) / 2;
+        let mut map = BTreeMap::new();
+        for i in 0..a.len() - mid + 1 {
+            let mut hash = h1[i + mid - 1];
+            if i != 0 {
+                hash = hash.wrapping_sub(h1[i - 1]);
+            }
+            hash = hash.wrapping_mul(p[p.len() - i - 1]);
+            map.insert(hash, i);
+        }
+        let mut f = false;
+        for i in 0..b.len() - mid + 1 {
+            let mut hash = h2[i + mid - 1];
+            if i != 0 {
+                hash = hash.wrapping_sub(h2[i - 1]);
+            }
+            hash = hash.wrapping_mul(p[p.len() - i - 1]);
+            if let Some(idx) = map.get(&hash) {
+                if &b[i..i + mid] == &a[*idx..*idx + mid] {
+                    res = Some(&b[i..i + mid]);
+                    f = true;
+                    break;
+                }
+            }
+        }
+        if f {
+            l = mid + 1;
+        } else {
+            r = mid - 1;
+        }
+    }
+
+    let mut map = BTreeMap::new();
+    for i in 0..a.len() - l + 1 {
+        let mut hash = h1[i + l - 1];
+        if i != 0 {
+            hash = hash.wrapping_sub(h1[i - 1]);
+        }
+        hash = hash.wrapping_mul(p[p.len() - i - 1]);
+        map.insert(hash, i);
+    }
+    for i in 0..b.len() - l + 1 {
+        let mut hash = h2[i + l - 1];
+        if i != 0 {
+            hash = hash.wrapping_sub(h2[i - 1]);
+        }
+        hash = hash.wrapping_mul(p[p.len() - i - 1]);
+        if let Some(idx) = map.get(&hash) {
+            if &b[i..i + l] == &a[*idx..*idx + l] {
+                res = Some(&b[i..i + l]);
+                break;
+            }
+        }
+    }
+    res
+}
+
+#[test]
+fn test_common_substring() {
+    assert_eq!(common_substring("VOTEFORTHEGREATALBANIAFORYOU", "CHOOSETHEGREATALBANIANFUTURE"), Some("THEGREATALBANIA"));
+    assert_eq!(common_substring("aba", "cabdd"), Some("ab"));
+    assert_eq!(common_substring("aaaaa", "bbaaa"), Some("aaa"));
+    assert_eq!(common_substring("", "bbaaa"), None);
+    assert_eq!(common_substring("abcde", "abcde"), Some("abcde"));
+    assert_eq!(common_substring("aaaaaaaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaaaaaaac"), Some("aaaaaaaaaaaaaaaaaaaaaaaaa"));
 }

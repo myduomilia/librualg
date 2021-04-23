@@ -29,6 +29,7 @@
 - Search distinct substrings
 - Suffix Array
 - The Longest Common Prefix
+- Search for a common substring (hashing)
 
 #### Combinatorics and enumeration algorithms
 - Permutation generation

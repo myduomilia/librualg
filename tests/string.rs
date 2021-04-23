@@ -60,3 +60,18 @@ fn test_lcp() {
     assert_eq!(data.lcp(4, 1), Some(2));
 
 }
+
+#[test]
+fn test_hash() {
+    assert_eq!(string::hash("abcdabcd"), 2842022591228);
+}
+
+#[test]
+fn test_common_substring() {
+    assert_eq!(string::common_substring("VOTEFORTHEGREATALBANIAFORYOU", "CHOOSETHEGREATALBANIANFUTURE"), Some("THEGREATALBANIA"));
+    assert_eq!(string::common_substring("aba", "cabdd"), Some("ab"));
+    assert_eq!(string::common_substring("aaaaa", "bbaaa"), Some("aaa"));
+    assert_eq!(string::common_substring("", "bbaaa"), None);
+    assert_eq!(string::common_substring("abcde", "abcde"), Some("abcde"));
+    assert_eq!(string::common_substring("aaaaaaaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaaaaaaac"), Some("aaaaaaaaaaaaaaaaaaaaaaaaa"));
+}
