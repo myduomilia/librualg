@@ -30,6 +30,7 @@
 - Suffix Array
 - The Longest Common Prefix
 - Search for a common substring (hashing)
+- Algorithm Aho Corasick. Search for a set of substring from the dictionary in the given string.
 
 #### Combinatorics and enumeration algorithms
 - Permutation generation
