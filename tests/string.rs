@@ -2,6 +2,7 @@ extern crate librualg;
 
 use librualg::*;
 use librualg::string::levenshtein_distance;
+use std::collections::BTreeMap;
 
 #[test]
 fn kmp(){
@@ -74,4 +75,54 @@ fn test_common_substring() {
     assert_eq!(string::common_substring("", "bbaaa"), None);
     assert_eq!(string::common_substring("abcde", "abcde"), Some("abcde"));
     assert_eq!(string::common_substring("aaaaaaaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaaaaaaac"), Some("aaaaaaaaaaaaaaaaaaaaaaaaa"));
+}
+
+#[test]
+fn test_aho_corasick() {
+    let mut dict = ["aba", "abb", "bbca"];
+    let t = "abaabbbbca";
+    let mut res = string::aho_corasick(&dict, t);
+
+    let mut m = BTreeMap::new();
+    m.insert(0, vec![0]);
+    m.insert(1, vec![3]);
+    m.insert(2, vec![6]);
+    assert_eq!(m, res);
+
+    let t = "abaabbbbcaaba";
+    res = string::aho_corasick(&dict, t);
+
+    m = BTreeMap::new();
+    m.insert(0, vec![0, 10]);
+    m.insert(1, vec![3]);
+    m.insert(2, vec![6]);
+    assert_eq!(m, res);
+
+    let t = "abaabbbbcaba";
+    res = string::aho_corasick(&dict, t);
+
+    m = BTreeMap::new();
+    m.insert(0, vec![0, 9]);
+    m.insert(1, vec![3]);
+    m.insert(2, vec![6]);
+    assert_eq!(m, res);
+
+    dict = ["abba", "bb", "cc"];
+    let t = "abba";
+    res = string::aho_corasick(&dict, t);
+
+    m = BTreeMap::new();
+    m.insert(0, vec![0]);
+    m.insert(1, vec![1]);
+    assert_eq!(m, res);
+
+    dict = ["aba", "baba", "cc"];
+    let t = "ababababa";
+    res = string::aho_corasick(&dict, t);
+
+    m = BTreeMap::new();
+    m.insert(0, vec![0, 2, 4, 6]);
+    m.insert(1, vec![1, 3, 5]);
+    assert_eq!(m, res);
+
 }
