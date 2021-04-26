@@ -469,6 +469,7 @@ fn test_hash() {
 /// assert_eq!(common_substring("aba", "cabdd"), Some("ab"));
 /// ```
 
+#[allow(clippy::many_single_char_names)]
 pub fn common_substring<'a> (a: &'a str, b: &'a str) -> Option<&'a str> {
     if a.is_empty() || b.is_empty() {
         return None;
@@ -513,7 +514,7 @@ pub fn common_substring<'a> (a: &'a str, b: &'a str) -> Option<&'a str> {
             }
             hash = hash.wrapping_mul(p[p.len() - i - 1]);
             if let Some(idx) = map.get(&hash) {
-                if &b[i..i + mid] == &a[*idx..*idx + mid] {
+                if b[i..i + mid] == a[*idx..*idx + mid] {
                     res = Some(&b[i..i + mid]);
                     f = true;
                     break;
@@ -543,7 +544,7 @@ pub fn common_substring<'a> (a: &'a str, b: &'a str) -> Option<&'a str> {
         }
         hash = hash.wrapping_mul(p[p.len() - i - 1]);
         if let Some(idx) = map.get(&hash) {
-            if &b[i..i + l] == &a[*idx..*idx + l] {
+            if b[i..i + l] == a[*idx..*idx + l] {
                 res = Some(&b[i..i + l]);
                 break;
             }
@@ -622,7 +623,7 @@ pub fn aho_corasick(dict: &[&str], t: &str) -> BTreeMap<i32, Vec<usize>> {
     while !q.is_empty() {
         let curr = q.pop_front().unwrap();
 
-        for (_, value) in &trie.arr[curr as usize].children {
+        for value in trie.arr[curr as usize].children.values() {
             q.push_back(*value);
         }
         if curr == 0 {
@@ -659,19 +660,13 @@ pub fn aho_corasick(dict: &[&str], t: &str) -> BTreeMap<i32, Vec<usize>> {
             v = *trie.arr[v as usize].children.get(&idx).unwrap();
         }
         if trie.arr[v as usize].pat_num != -1 {
-            if res.contains_key(&trie.arr[v as usize].pat_num) {
-                res.get_mut(&trie.arr[v as usize].pat_num).unwrap().push(i + 1 - dict[trie.arr[v as usize].pat_num as usize].len());
-            } else {
-                res.insert(trie.arr[v as usize].pat_num, vec![i + 1 - dict[trie.arr[v as usize].pat_num as usize].len()]);
-            }
+            let value = res.entry(trie.arr[v as usize].pat_num).or_insert(vec![]);
+            (*value).push(i + 1 - dict[trie.arr[v as usize].pat_num as usize].len());
         }
         let mut good_link = trie.arr[v as usize].good_link;
         while good_link > 0 {
-            if res.contains_key(&trie.arr[good_link as usize].pat_num) {
-                res.get_mut(&trie.arr[good_link as usize].pat_num).unwrap().push(i + 1 - dict[trie.arr[good_link as usize].pat_num as usize].len());
-            } else {
-                res.insert(trie.arr[good_link as usize].pat_num, vec![i + 1 - dict[trie.arr[good_link as usize].pat_num as usize].len()]);
-            }
+            let value = res.entry(trie.arr[good_link as usize].pat_num).or_insert(vec![]);
+            (*value).push(i + 1 - dict[trie.arr[good_link as usize].pat_num as usize].len());
             good_link = trie.arr[good_link as usize].good_link;
         }
     }
