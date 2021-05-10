@@ -23,3 +23,23 @@ fn test_bfs() {
     let parents = graph.bfs(101);
     assert_eq!(graph.search_path(101, &parents), None);
 }
+
+#[test]
+fn test_connected_components() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 4, 0.0);
+
+    graph.add_oriented_edge(5, 6, 0.0);
+    graph.add_oriented_edge(6, 7, 0.0);
+
+    graph.add_oriented_edge(8, 9, 0.0);
+    graph.add_oriented_edge(9, 10, 0.0);
+    graph.add_oriented_edge(10, 11, 0.0);
+
+    let components = graph.connected_components();
+    assert_eq!(components[0], [1, 2, 3, 4]);
+    assert_eq!(components[1], [5, 6, 7]);
+    assert_eq!(components[2], [8, 9, 10, 11]);
+}

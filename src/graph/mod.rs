@@ -58,7 +58,6 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
         let mut visits = BTreeSet::new();
 
-
         if self.adj.get(&from).is_some() {
             queue.push_back(&from);
             visits.insert(&from);
@@ -185,6 +184,54 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         (parents, distances)
     }
 
+    /// Get connected components
+    ///```
+    /// use librualg::graph::Graph;
+    ///
+    /// let mut graph = Graph::new();
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(3, 4, 0.0);
+    ///
+    /// graph.add_oriented_edge(5, 6, 0.0);
+    /// graph.add_oriented_edge(6, 7, 0.0);
+    ///
+    /// graph.add_oriented_edge(8, 9, 0.0);
+    /// graph.add_oriented_edge(9, 10, 0.0);
+    /// graph.add_oriented_edge(10, 11, 0.0);
+    ///
+    /// let components = graph.connected_components();
+    /// assert_eq!(components[0], [1, 2, 3, 4]);
+    /// assert_eq!(components[1], [5, 6, 7]);
+    /// assert_eq!(components[2], [8, 9, 10, 11]);
+    /// ```
+
+    pub fn connected_components(&self) -> Vec<Vec<Indent>> {
+        let mut components = vec![];
+        let mut visits = BTreeSet::new();
+        for vertex in self.adj.keys() {
+            if !visits.contains(vertex) {
+                let mut queue = VecDeque::new();
+                let mut vec = vec![];
+                visits.insert(vertex);
+                queue.push_back(vertex);
+                while let Some(vertex) = queue.pop_front(){
+                    vec.push(vertex.clone());
+                    if self.adj.get(&vertex).is_some() {
+                        for edge in self.adj.get(&vertex).unwrap().iter() {
+                            if !visits.contains(&edge.to) {
+                                queue.push_back(&edge.to);
+                                visits.insert(&edge.to);
+                            }
+                        }
+                    }
+                }
+                components.push(vec)
+            }
+        }
+        components
+    }
+
     /// Adds a new oriented edge to the graph
     pub fn add_oriented_edge(&mut self, from: Indent, to: Indent, weight: f32) {
         match self.adj.get_mut(&from) {
@@ -303,4 +350,24 @@ fn test_dijkstra() {
     let (parents, distances) = graph.dijkstra(1);
     assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
     assert_eq!(*distances.get(&3).unwrap(), 7.0);
+}
+
+#[test]
+fn test_connected_components() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 4, 0.0);
+
+    graph.add_oriented_edge(5, 6, 0.0);
+    graph.add_oriented_edge(6, 7, 0.0);
+
+    graph.add_oriented_edge(8, 9, 0.0);
+    graph.add_oriented_edge(9, 10, 0.0);
+    graph.add_oriented_edge(10, 11, 0.0);
+
+    let components = graph.connected_components();
+    assert_eq!(components[0], [1, 2, 3, 4]);
+    assert_eq!(components[1], [5, 6, 7]);
+    assert_eq!(components[2], [8, 9, 10, 11]);
 }

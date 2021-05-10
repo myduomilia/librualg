@@ -38,6 +38,7 @@
 - bfs (Breadth-First Search)
 - dfs (Depth-First Search)
 - dijkstra
+- connected components
 
 #### Mathematics algorithms:
 - The Greatest Common Divisor (GCD)
