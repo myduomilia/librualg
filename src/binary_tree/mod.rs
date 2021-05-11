@@ -18,124 +18,155 @@ use std::fmt::Display;
 /// assert_eq!(tree.get(&7), None);
 /// assert_eq!(tree.get(&5), Some(&5));
 /// ```
-#[derive(Clone)]
-pub enum BinaryTree<T> where T: std::cmp::Ord + Clone + Display {
-    Empty,
-    NonEmpty(Box<Node<T>>)
+
+pub struct BinaryTree<T> where T: std::cmp::Ord + Clone + Display {
+    head: Option<Box<Node<T>>>
 }
 
-#[derive(Clone)]
-pub struct Node<T> where T: std::cmp::Ord + Clone + Display{
-    value: T,
-    left: BinaryTree<T>,
-    right: BinaryTree<T>
-}
-impl <T> BinaryTree<T> where T: std::cmp::Ord + Clone +Display {
+impl <T> BinaryTree<T> where T: std::cmp::Ord + Clone + Display {
     pub fn new() -> Self {
-        BinaryTree::Empty
+        BinaryTree {
+            head: None,
+        }
     }
     pub fn add(&mut self, value: T) {
-        match self {
-            BinaryTree::NonEmpty(ref mut tree) => {
-                if value > tree.value {
-                    tree.right.add(value);
-                } else {
-                    tree.left.add(value);
+        match &mut self.head {
+            Some(ref mut node) => {
+                node.add(value);
+            }
+            None => {
+                self.head = Some(Box::new(Node::new(value)));
+            }
+        }
+    }
+
+    pub fn get(&self, value: &T) -> Option<&T> {
+        match &self.head {
+            Some(node) => {
+                node.get(value)
+            }
+            None => None
+        }
+    }
+
+    pub fn remove(&mut self, value: &T){
+        if let Some(root) = self.head.take() {
+            self.head = Node::remove(root, value);
+        }
+    }
+}
+
+pub struct Node <T> where T: std::cmp::Ord + Clone + Display {
+    value: T,
+    left: Option<Box<Node<T>>>,
+    right: Option<Box<Node<T>>>
+}
+
+impl <T> Node<T> where T: std::cmp::Ord + Clone + Display {
+
+    pub fn new(value: T) -> Self {
+        Node {
+            value,
+            left: None,
+            right: None
+        }
+    }
+
+    pub fn add(&mut self, value: T) {
+        if value >= self.value {
+            match &mut self.right {
+                Some(node) => {
+                    node.add(value.clone());
+                }
+                None => {
+                    self.right = Some(Box::new(Node::new(value)));
                 }
             }
-            BinaryTree::Empty => {
-                *self = BinaryTree::NonEmpty(Box::new(Node {
-                    value,
-                    left: BinaryTree::Empty,
-                    right: BinaryTree::Empty
-                }))
+        } else {
+            match &mut self.left {
+                Some(node) => {
+                    node.add(value.clone());
+                }
+                None => {
+                    self.left = Some(Box::new(Node::new(value)));
+                }
             }
         }
     }
     pub fn get(&self, value: &T) -> Option<&T> {
-        return match self {
-            BinaryTree::NonEmpty(ref tree) => {
-                match value.cmp(&tree.value) {
-                    Ordering::Equal => {
-                        Some(&tree.value)
+        match self.value.cmp(value) {
+            Ordering::Equal => {
+                Some(&self.value)
+            }
+            Ordering::Greater => {
+                match &self.left {
+                    Some(node) => {
+                        node.get(value)
                     }
-                    Ordering::Greater => {
-                        tree.right.get(value)
-                    }
-                    Ordering::Less => {
-                        tree.left.get(value)
+                    None => {
+                        None
                     }
                 }
             }
-            BinaryTree::Empty => {
-                None
+            Ordering::Less => {
+                match &self.right {
+                    Some(node) => {
+                        node.get(value)
+                    }
+                    None => {
+                        None
+                    }
+                }
             }
         }
     }
 
-    pub fn remove(&mut self, value: &T) -> Option<T> {
-        return match self {
-            BinaryTree::NonEmpty(ref mut node) => {
-                match value.cmp(&node.value) {
-                    Ordering::Equal => {
-                        match (&mut node.left, &mut node.right) {
-                            (BinaryTree::Empty, BinaryTree::Empty) => {
-                                let elem = node.value.clone();
-                                *self = BinaryTree::Empty;
-                                Some(elem)
-                            }
-                            (BinaryTree::NonEmpty(left), BinaryTree::Empty) => {
-                                let elem = node.value.clone();
-                                *self = BinaryTree::NonEmpty(left.clone());
-                                Some(elem)
-                            }
-                            (BinaryTree::Empty, BinaryTree::NonEmpty(right)) => {
-                                let elem = node.value.clone();
-                                *self = BinaryTree::NonEmpty(right.clone());
-                                Some(elem)
-                            }
-                            // (BinaryTree::NonEmpty(_), BinaryTree::NonEmpty(_)) => {
-                            //     let mut maximux = &mut node.left;
-                            //     while let BinaryTree::NonEmpty(ref mut node) = maximux {
-                            //         // if let BinaryTree::Empty = node.right {
-                            //         //     break;
-                            //         // }
-                            //         maximux = &mut node.right;
-                            //     }
-                            //     let elem = node.value.clone();
-                            //
-                            //     if let BinaryTree::NonEmpty(ref mut value) = maximux {
-                            //         node.value = value.value.clone();
-                            //         match (&value.left, &value.right) {
-                            //             (BinaryTree::Empty, BinaryTree::Empty) => {
-                            //                 *maximux = BinaryTree::Empty;
-                            //             }
-                            //             (BinaryTree::NonEmpty(left), BinaryTree::Empty) => {
-                            //                 *maximux = BinaryTree::NonEmpty(left.clone());
-                            //             }
-                            //             _ => {
-                            //                 unreachable!()
-                            //             }
-                            //         }
-                            //     }
-                            //     Some(elem)
-                            // }
-                            _ => {
-                                unreachable!()
-                            }
-                        }
+    fn right_most_child(&mut self) -> Option<Box<Node<T>>> {
+        match self.right {
+            Some(ref mut right) =>  {
+                if let Some(t) = right.right_most_child() {
+                    Some(t)
+                } else {
+                    let mut r = self.right.take();
+                    if let Some(ref mut r) = r {
+                        self.right = std::mem::replace(&mut r.left, None);
                     }
-                    Ordering::Greater => {
-                        node.right.remove(value)
-                    }
-                    Ordering::Less => {
-                        node.left.remove(value)
-                    }
+                    r
                 }
+            },
+            None => None
+        }
+    }
+
+    pub fn remove(mut self:Box<Node<T>>, value: &T) -> Option<Box<Node<T>>> {
+        if value < &self.value {
+            if let Some(left) = self.left.take() {
+                self.left = Self::remove(left, value);
             }
-            BinaryTree::Empty => {
-                None
+            return Some(self);
+        }
+
+        if value > &self.value {
+            if let Some(right) = self.right.take() {
+                self.right = Self::remove(right, value);
             }
+            return Some(self);
+        }
+
+        match (self.left.take(), self.right.take()) {
+            (None, None) => None,
+            (Some(left), None) => Some(left),
+            (None, Some(right)) => Some(right),
+            (Some(mut left), Some(right)) => {
+                if let Some(mut rightmost) = left.right_most_child() {
+                    rightmost.left = Some(left);
+                    rightmost.right = Some(right);
+                    Some(rightmost)
+                } else {
+                    left.right = Some(right);
+                    Some(left)
+                }
+            },
         }
     }
 }
@@ -151,57 +182,58 @@ fn test() {
     assert_eq!(tree.get(&8), None);
 }
 
-// #[test]
-// fn test_remove_root() {
-//     let mut tree = BinaryTree::new();
-//     tree.add(1);
-//     assert_eq!(tree.get(&1), Some(&1));
-//     tree.remove(&1);
-//     assert_eq!(tree.get(&1), None);
-//     tree.add(2);
-//     assert_eq!(tree.get(&2), Some(&2));
-// }
-//
-// #[test]
-// fn test_remove_leaf() {
-//     let mut tree = BinaryTree::new();
-//     tree.add(5);
-//     tree.add(7);
-//     tree.add(2);
-//     tree.add(6);
-//     assert_eq!(tree.get(&6), Some(&6));
-//     tree.remove(&6);
-//     assert_eq!(tree.get(&6), None);
-//     tree.remove(&2);
-//     assert_eq!(tree.get(&2), None);
-// }
-//
-// #[test]
-// fn test_remove() {
-//     let mut tree = BinaryTree::new();
-//     tree.add(4);
-//     tree.add(7);
-//     tree.add(2);
-//     tree.add(6);
-//     tree.add(5);
-//     tree.add(9);
-//
-//     tree.remove(&7);
-//     assert_eq!(tree.get(&5), Some(&5));
-// }
-//
-// #[test]
-// fn test_remove_exist_two_child(){
-//     let mut tree = BinaryTree::new();
-//     tree.add(3);
-//     tree.add(7);
-//     tree.add(2);
-//     tree.add(9);
-//     tree.add(5);
-//     assert_eq!(tree.get(&7), Some(&7));
-//     assert_eq!(tree.get(&8), None);
-//     tree.remove(&7);
-//     assert_eq!(tree.get(&7), None);
-//     assert_eq!(tree.get(&5), Some(&5));
-//     assert_eq!(tree.get(&5), Some(&9));
-// }
+#[test]
+fn test_remove_root() {
+    let mut tree = BinaryTree::new();
+    tree.add(1);
+    assert_eq!(tree.get(&1), Some(&1));
+    tree.remove(&1);
+    assert_eq!(tree.get(&1), None);
+    tree.add(2);
+    assert_eq!(tree.get(&2), Some(&2));
+}
+
+#[test]
+fn test_remove_leaf() {
+    let mut tree = BinaryTree::new();
+    tree.add(5);
+    tree.add(7);
+    tree.add(2);
+    tree.add(6);
+    assert_eq!(tree.get(&6), Some(&6));
+    tree.remove(&6);
+    assert_eq!(tree.get(&6), None);
+    tree.remove(&2);
+    assert_eq!(tree.get(&2), None);
+}
+
+#[test]
+fn test_remove() {
+    let mut tree = BinaryTree::new();
+    tree.add(4);
+    tree.add(7);
+    tree.add(2);
+    tree.add(6);
+    tree.add(5);
+    tree.add(9);
+
+    tree.remove(&7);
+    assert_eq!(tree.get(&5), Some(&5));
+    assert_eq!(tree.get(&9), Some(&9));
+}
+
+#[test]
+fn test_remove_exist_two_child(){
+    let mut tree = BinaryTree::new();
+    tree.add(3);
+    tree.add(7);
+    tree.add(2);
+    tree.add(9);
+    tree.add(5);
+    assert_eq!(tree.get(&7), Some(&7));
+    assert_eq!(tree.get(&8), None);
+    tree.remove(&7);
+    assert_eq!(tree.get(&7), None);
+    assert_eq!(tree.get(&5), Some(&5));
+    assert_eq!(tree.get(&9), Some(&9));
+}
