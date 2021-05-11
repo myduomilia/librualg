@@ -138,22 +138,22 @@ impl <T> Node<T> where T: std::cmp::Ord + Clone + Display {
         }
     }
 
-    pub fn remove(mut self:Box<Node<T>>, value: &T) -> Option<Box<Node<T>>> {
-        if value < &self.value {
-            if let Some(left) = self.left.take() {
-                self.left = Self::remove(left, value);
+    pub fn remove(mut node: Box<Node<T>>, value: &T) -> Option<Box<Node<T>>> {
+        if value < &node.value {
+            if let Some(left) = node.left.take() {
+                node.left = Self::remove(left, value);
             }
-            return Some(self);
+            return Some(node);
         }
 
-        if value > &self.value {
-            if let Some(right) = self.right.take() {
-                self.right = Self::remove(right, value);
+        if value > &node.value {
+            if let Some(right) = node.right.take() {
+                node.right = Self::remove(right, value);
             }
-            return Some(self);
+            return Some(node);
         }
 
-        match (self.left.take(), self.right.take()) {
+        match (node.left.take(), node.right.take()) {
             (None, None) => None,
             (Some(left), None) => Some(left),
             (None, Some(right)) => Some(right),
