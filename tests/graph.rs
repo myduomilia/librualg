@@ -43,3 +43,29 @@ fn test_connected_components() {
     assert_eq!(components[1], [5, 6, 7]);
     assert_eq!(components[2], [8, 9, 10, 11]);
 }
+
+#[test]
+fn test_strongly_connected_components() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge("a", "b", 0.0);
+    graph.add_oriented_edge("b", "f", 0.0);
+    graph.add_oriented_edge("e", "a", 0.0);
+    graph.add_oriented_edge("b", "e", 0.0);
+    graph.add_oriented_edge("e", "f", 0.0);
+
+    graph.add_oriented_edge("b", "c", 0.0);
+    graph.add_oriented_edge("f", "g", 0.0);
+    graph.add_oriented_edge("g", "f", 0.0);
+    graph.add_oriented_edge("c", "g", 0.0);
+
+    graph.add_oriented_edge("c", "d", 0.0);
+    graph.add_oriented_edge("d", "c", 0.0);
+    graph.add_oriented_edge("d", "h", 0.0);
+    graph.add_oriented_edge("h", "d", 0.0);
+    graph.add_oriented_edge("h", "g", 0.0);
+
+    let components = graph.strongly_connected_components();
+    assert_eq!(components[0], ["a", "b", "e"]);
+    assert_eq!(components[1], ["c", "d", "h"]);
+    assert_eq!(components[2], ["f", "g"]);
+}

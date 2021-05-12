@@ -56,19 +56,19 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     pub fn bfs(&self, from: Indent) -> BTreeMap::<Indent, VertexProperties<Indent>> {
         let mut queue = VecDeque::new();
         let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
-        let mut visits = BTreeSet::new();
+        let mut visited = BTreeSet::new();
 
         if self.adj.get(&from).is_some() {
             queue.push_back(&from);
-            visits.insert(&from);
+            visited.insert(&from);
             parents.insert(Clone::clone(&from), VertexProperties {parent: None, time_in: None, time_out: None});
             while let Some(vertex) = queue.pop_front(){
                 if self.adj.get(&vertex).is_some() {
                     for edge in self.adj.get(&vertex).unwrap().iter() {
-                        if !visits.contains(&edge.to) {
+                        if !visited.contains(&edge.to) {
                             parents.insert(edge.to.clone(), VertexProperties {parent: Some(vertex.clone()), time_in: None, time_out: None});
                             queue.push_back(&edge.to);
-                            visits.insert(&edge.to);
+                            visited.insert(&edge.to);
                         }
                     }
                 }
@@ -116,6 +116,13 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         parents
     }
 
+    fn dfs2(&self, from: Indent, timer: &mut u32) -> BTreeMap::<Indent, VertexProperties<Indent>> {
+        let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
+        let mut colors = BTreeMap::<Indent, Color>::new();
+        self._dfs(from, timer, &mut parents, &mut colors);
+        parents
+    }
+
     /// Dijkstra algorithm.
     /// Returns an ancestor vector along the graph traversal path and distances to the other vertexs
     ///```
@@ -136,7 +143,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
 
     pub fn dijkstra(&self, from: Indent) -> (BTreeMap::<Indent, VertexProperties<Indent>>, BTreeMap::<Indent, f32>) {
         let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
-        let mut visits = BTreeSet::<Indent>::new();
+        let mut visited = BTreeSet::<Indent>::new();
         let mut distances = BTreeMap::<Indent, f32>::new();
 
         struct D<Indent> {
@@ -170,10 +177,10 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         heap.push(D{ node: from, dist: 0.0});
         while !heap.is_empty() {
             let d = heap.pop().unwrap();
-            visits.insert(d.node.clone());
+            visited.insert(d.node.clone());
             if self.adj.get(&d.node).is_some() {
                 for edge in self.adj.get(&d.node).unwrap() {
-                    if !visits.contains(&edge.to) && edge.weight + d.dist < *distances.get(&edge.to).unwrap_or(&f32::MAX) {
+                    if !visited.contains(&edge.to) && edge.weight + d.dist < *distances.get(&edge.to).unwrap_or(&f32::MAX) {
                         parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None});
                         distances.insert(edge.to.clone(), edge.weight + d.dist);
                         heap.push(D{node: edge.to.clone(), dist: *distances.get(&edge.to).unwrap()});
@@ -208,25 +215,89 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
 
     pub fn connected_components(&self) -> Vec<Vec<Indent>> {
         let mut components = vec![];
-        let mut visits = BTreeSet::new();
+        let mut visited = BTreeSet::new();
         for vertex in self.adj.keys() {
-            if !visits.contains(vertex) {
+            if !visited.contains(vertex) {
                 let mut queue = VecDeque::new();
                 let mut vec = vec![];
-                visits.insert(vertex);
+                visited.insert(vertex);
                 queue.push_back(vertex);
                 while let Some(vertex) = queue.pop_front(){
                     vec.push(vertex.clone());
                     if self.adj.get(&vertex).is_some() {
                         for edge in self.adj.get(&vertex).unwrap().iter() {
-                            if !visits.contains(&edge.to) {
+                            if !visited.contains(&edge.to) {
                                 queue.push_back(&edge.to);
-                                visits.insert(&edge.to);
+                                visited.insert(&edge.to);
                             }
                         }
                     }
                 }
                 components.push(vec)
+            }
+        }
+        components
+    }
+
+    /// Get strongly connected components
+    /// ```
+    /// use librualg::graph::Graph;
+    ///
+    /// let mut graph = Graph::new();
+    /// graph.add_oriented_edge("a", "b", 0.0);
+    /// graph.add_oriented_edge("b", "f", 0.0);
+    /// graph.add_oriented_edge("e", "a", 0.0);
+    /// graph.add_oriented_edge("b", "e", 0.0);
+    /// graph.add_oriented_edge("e", "f", 0.0);
+    ///
+    /// graph.add_oriented_edge("b", "c", 0.0);
+    /// graph.add_oriented_edge("f", "g", 0.0);
+    /// graph.add_oriented_edge("g", "f", 0.0);
+    /// graph.add_oriented_edge("c", "g", 0.0);
+    ///
+    /// graph.add_oriented_edge("c", "d", 0.0);
+    /// graph.add_oriented_edge("d", "c", 0.0);
+    /// graph.add_oriented_edge("d", "h", 0.0);
+    /// graph.add_oriented_edge("h", "d", 0.0);
+    /// graph.add_oriented_edge("h", "g", 0.0);
+    ///
+    /// let components = graph.strongly_connected_components();
+    /// assert_eq!(components[0], ["a", "b", "e"]);
+    /// assert_eq!(components[1], ["c", "d", "h"]);
+    /// assert_eq!(components[2], ["f", "g"]);
+    ///```
+
+    pub fn strongly_connected_components(&self) -> Vec<Vec<Indent>> {
+        let mut components = vec![];
+        let mut graph_transp = Graph::new();
+        for (vertex, edges) in &self.adj {
+            for edge in edges {
+                graph_transp.add_oriented_edge(edge.to.clone(), vertex.clone(), edge.weight);
+            }
+        }
+        let mut visited = BTreeSet::new();
+        let mut orders = Vec::with_capacity(self.adj.len());
+        let mut timer = 0;
+        for vertex in self.adj.keys(){
+            if !visited.contains(vertex) {
+                for (vertex, property) in self.dfs2(vertex.clone(), &mut timer){
+                    visited.insert(vertex.clone());
+                    orders.push((vertex.clone(), property.time_out.unwrap()));
+                }
+            }
+        }
+        orders.sort_by_key(|pair| pair.1);
+        visited.clear();
+        for pair in orders.iter().rev() {
+            if !visited.contains(&pair.0) {
+                let mut vec = vec![];
+                for (vertex, _) in graph_transp.dfs(pair.0.clone()) {
+                    if !visited.contains(&vertex) {
+                        visited.insert(vertex.clone());
+                        vec.push(vertex);
+                    }
+                }
+                components.push(vec);
             }
         }
         components
@@ -370,4 +441,30 @@ fn test_connected_components() {
     assert_eq!(components[0], [1, 2, 3, 4]);
     assert_eq!(components[1], [5, 6, 7]);
     assert_eq!(components[2], [8, 9, 10, 11]);
+}
+
+#[test]
+fn test_strongly_connected_components() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge("a", "b", 0.0);
+    graph.add_oriented_edge("b", "f", 0.0);
+    graph.add_oriented_edge("e", "a", 0.0);
+    graph.add_oriented_edge("b", "e", 0.0);
+    graph.add_oriented_edge("e", "f", 0.0);
+
+    graph.add_oriented_edge("b", "c", 0.0);
+    graph.add_oriented_edge("f", "g", 0.0);
+    graph.add_oriented_edge("g", "f", 0.0);
+    graph.add_oriented_edge("c", "g", 0.0);
+
+    graph.add_oriented_edge("c", "d", 0.0);
+    graph.add_oriented_edge("d", "c", 0.0);
+    graph.add_oriented_edge("d", "h", 0.0);
+    graph.add_oriented_edge("h", "d", 0.0);
+    graph.add_oriented_edge("h", "g", 0.0);
+
+    let components = graph.strongly_connected_components();
+    assert_eq!(components[0], ["a", "b", "e"]);
+    assert_eq!(components[1], ["c", "d", "h"]);
+    assert_eq!(components[2], ["f", "g"]);
 }

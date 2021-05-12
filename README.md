@@ -40,6 +40,7 @@
 - dfs (Depth-First Search)
 - dijkstra
 - connected components
+- strongly connected components
 
 #### Mathematics algorithms:
 - The Greatest Common Divisor (GCD)
