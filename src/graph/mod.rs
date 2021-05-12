@@ -116,13 +116,6 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         parents
     }
 
-    fn dfs2(&self, from: Indent, timer: &mut u32) -> BTreeMap::<Indent, VertexProperties<Indent>> {
-        let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
-        let mut colors = BTreeMap::<Indent, Color>::new();
-        self._dfs(from, timer, &mut parents, &mut colors);
-        parents
-    }
-
     /// Dijkstra algorithm.
     /// Returns an ancestor vector along the graph traversal path and distances to the other vertexs
     ///```
@@ -277,10 +270,9 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         }
         let mut visited = BTreeSet::new();
         let mut orders = Vec::with_capacity(self.adj.len());
-        let mut timer = 0;
         for vertex in self.adj.keys(){
             if !visited.contains(vertex) {
-                for (vertex, property) in self.dfs2(vertex.clone(), &mut timer){
+                for (vertex, property) in self.dfs(vertex.clone()){
                     visited.insert(vertex.clone());
                     orders.push((vertex.clone(), property.time_out.unwrap()));
                 }
