@@ -1,6 +1,6 @@
 use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
-use std::cmp::Ordering;
+use std::cmp::{Ordering};
 
 enum Color {
     Grey = 1,
@@ -295,6 +295,37 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         components
     }
 
+    /// Topologic sort
+    /// ```
+    /// use librualg::graph::Graph;
+    /// let mut graph = Graph::new();
+    /// graph.add_oriented_edge("a", "b", 0.0);
+    /// graph.add_oriented_edge("a", "c", 0.0);
+    /// graph.add_oriented_edge("a", "e", 0.0);
+    /// graph.add_oriented_edge("a", "d", 0.0);
+    /// graph.add_oriented_edge("b", "d", 0.0);
+    /// graph.add_oriented_edge("c", "d", 0.0);
+    /// graph.add_oriented_edge("c", "e", 0.0);
+    ///
+    /// assert_eq!(graph.topological_sort(), vec!["a", "b", "c", "d", "e"]);
+    ///```
+
+    pub fn topological_sort(&self) -> Vec<Indent> {
+        let mut visited = BTreeSet::new();
+        let mut topology_vec = Vec::with_capacity(self.adj.len());
+        for vertex in self.adj.keys() {
+            if !visited.contains(vertex) {
+                for (vertex, _) in self.dfs(vertex.clone()).iter(){
+                    if !visited.contains(vertex) {
+                        visited.insert(vertex.clone());
+                        topology_vec.push(vertex.clone());
+                    }
+                }
+            }
+        }
+        topology_vec
+    }
+
     /// Adds a new oriented edge to the graph
     pub fn add_oriented_edge(&mut self, from: Indent, to: Indent, weight: f32) {
         match self.adj.get_mut(&from) {
@@ -459,4 +490,23 @@ fn test_strongly_connected_components() {
     assert_eq!(components[0], ["a", "b", "e"]);
     assert_eq!(components[1], ["c", "d", "h"]);
     assert_eq!(components[2], ["f", "g"]);
+}
+
+#[test]
+fn topology_sort() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge("a", "b", 0.0);
+    graph.add_oriented_edge("a", "c", 0.0);
+    graph.add_oriented_edge("a", "e", 0.0);
+    graph.add_oriented_edge("a", "d", 0.0);
+    graph.add_oriented_edge("b", "d", 0.0);
+    graph.add_oriented_edge("c", "d", 0.0);
+    graph.add_oriented_edge("c", "e", 0.0);
+
+    assert_eq!(graph.topological_sort(), vec!["a", "b", "c", "d", "e"]);
+
+    graph.add_oriented_edge("x", "y", 0.0);
+    graph.add_oriented_edge("y", "z", 0.0);
+
+    assert_eq!(graph.topological_sort(), vec!["a", "b", "c", "d", "e", "x", "y", "z"]);
 }

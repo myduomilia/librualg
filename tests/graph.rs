@@ -69,3 +69,17 @@ fn test_strongly_connected_components() {
     assert_eq!(components[1], ["c", "d", "h"]);
     assert_eq!(components[2], ["f", "g"]);
 }
+
+#[test]
+fn topology_sort() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge("a", "b", 0.0);
+    graph.add_oriented_edge("a", "c", 0.0);
+    graph.add_oriented_edge("a", "e", 0.0);
+    graph.add_oriented_edge("a", "d", 0.0);
+    graph.add_oriented_edge("b", "d", 0.0);
+    graph.add_oriented_edge("c", "d", 0.0);
+    graph.add_oriented_edge("c", "e", 0.0);
+
+    assert_eq!(graph.topological_sort(), vec!["a", "b", "c", "d", "e"]);
+}

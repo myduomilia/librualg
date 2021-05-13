@@ -16,7 +16,6 @@
 - RSQ (Range Sum Query)
 - RMQMin (Range Minimum Query)
 - RMQMax (Range Maximum Query)
-- RMQMin (Range Minimum Query)
 
 #### Sparse Tables:
 - SparseTableMin (Range Minimum Queries) 
@@ -36,11 +35,12 @@
 #### Combinatorics and enumeration algorithms
 - Permutation generation
 #### Graph algorithms:
-- bfs (Breadth-First Search)
-- dfs (Depth-First Search)
-- dijkstra
-- connected components
-- strongly connected components
+- BFS (Breadth-First Search)
+- DFS (Depth-First Search)
+- Dijkstra
+- Connected components
+- Strongly connected components
+- Topologic sort (for DAG)
 
 #### Mathematics algorithms:
 - The Greatest Common Divisor (GCD)
