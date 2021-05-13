@@ -488,7 +488,6 @@ fn test_strongly_connected_components() {
     graph.add_oriented_edge("h", "g", 0.0);
 
     let components = graph.strongly_connected_components();
-    println!("{:?}", components);
     assert_eq!(components[0], ["a", "b", "e"]);
     assert_eq!(components[1], ["c", "d", "h"]);
     assert_eq!(components[2], ["f", "g"]);
