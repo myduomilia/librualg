@@ -1,6 +1,7 @@
 use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
 use std::cmp::{Ordering};
+use std::fmt::{Display, Debug};
 
 enum Color {
     Grey = 1,
@@ -16,22 +17,22 @@ pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
 }
 
 #[derive(Clone)]
-struct Edge <Indent> where Indent: Eq + Ord + Clone {
+struct Edge <Indent> where Indent: Eq + Ord + Clone + Display + Debug {
     to: Indent,
     weight: f32,
 }
 
-pub struct Graph <Indent> where Indent: Eq + Ord + Clone {
+pub struct Graph <Indent> where Indent: Eq + Ord + Clone + Display + Debug {
     adj: BTreeMap<Indent, Vec<Edge<Indent>>>,
 }
 
-impl<Indent> Default for Graph<Indent> where Indent: Eq + Ord + Clone {
+impl<Indent> Default for Graph<Indent> where Indent: Eq + Ord + Clone + Display + Debug {
     fn default() -> Self {
         Graph { adj: BTreeMap::new() }
     }
 }
 
-impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
+impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone + Display + Debug {
     pub fn new() -> Self {
         Graph::default()
     }
@@ -164,7 +165,6 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
             }
         }
 
-
         let mut heap = BinaryHeap::<D<Indent>>::new();
         distances.insert(from.clone(), 0.0);
         heap.push(D{ node: from, dist: 0.0});
@@ -272,18 +272,19 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         let mut orders = Vec::with_capacity(self.adj.len());
         for vertex in self.adj.keys(){
             if !visited.contains(vertex) {
-                for (vertex, property) in self.dfs(vertex.clone()){
-                    visited.insert(vertex.clone());
-                    orders.push((vertex.clone(), property.time_out.unwrap()));
+                for (vertex, _) in self.dfs(vertex.clone()){
+                    if !visited.contains(&vertex) {
+                        visited.insert(vertex.clone());
+                        orders.push(vertex.clone());
+                    }
                 }
             }
         }
-        orders.sort_by_key(|pair| pair.1);
         visited.clear();
-        for pair in orders.iter().rev() {
-            if !visited.contains(&pair.0) {
+        for vertex in &orders {
+            if !visited.contains(vertex) {
                 let mut vec = vec![];
-                for (vertex, _) in graph_transp.dfs(pair.0.clone()) {
+                for (vertex, _) in graph_transp.dfs(vertex.clone()) {
                     if !visited.contains(&vertex) {
                         visited.insert(vertex.clone());
                         vec.push(vertex);
@@ -487,6 +488,7 @@ fn test_strongly_connected_components() {
     graph.add_oriented_edge("h", "g", 0.0);
 
     let components = graph.strongly_connected_components();
+    println!("{:?}", components);
     assert_eq!(components[0], ["a", "b", "e"]);
     assert_eq!(components[1], ["c", "d", "h"]);
     assert_eq!(components[2], ["f", "g"]);
