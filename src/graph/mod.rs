@@ -1,7 +1,6 @@
 use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
 use std::cmp::{Ordering};
-use std::fmt::{Display, Debug};
 
 enum Color {
     Grey = 1,
@@ -17,22 +16,22 @@ pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
 }
 
 #[derive(Clone)]
-struct Edge <Indent> where Indent: Eq + Ord + Clone + Display + Debug {
+struct Edge <Indent> where Indent: Eq + Ord + Clone {
     to: Indent,
     weight: f32,
 }
 
-pub struct Graph <Indent> where Indent: Eq + Ord + Clone + Display + Debug {
+pub struct Graph <Indent> where Indent: Eq + Ord + Clone {
     adj: BTreeMap<Indent, Vec<Edge<Indent>>>,
 }
 
-impl<Indent> Default for Graph<Indent> where Indent: Eq + Ord + Clone + Display + Debug {
+impl<Indent> Default for Graph<Indent> where Indent: Eq + Ord + Clone {
     fn default() -> Self {
         Graph { adj: BTreeMap::new() }
     }
 }
 
-impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone + Display + Debug {
+impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     pub fn new() -> Self {
         Graph::default()
     }
