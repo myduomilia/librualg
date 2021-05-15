@@ -79,7 +79,6 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
 
     fn _dfs(&self, from: Indent, timer: &mut u32,  parents: &mut BTreeMap::<Indent, VertexProperties<Indent>>, colors: &mut BTreeMap::<Indent, Color>) {
         *timer += 1;
-        parents.insert(from.clone(), VertexProperties{parent: None, time_in: Some(*timer), time_out: None});
         colors.insert(from.clone(), Color::Grey);
         if self.adj.get(&from).is_some() {
             for edge in self.adj.get(&from).unwrap().iter() {
@@ -104,7 +103,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     /// graph.add_oriented_edge(2, 3, 0.0);
     /// graph.add_oriented_edge(3, 5, 0.0);
     ///
-    /// let res = graph.bfs(1);
+    /// let res = graph.dfs(1);
     /// assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
     /// ```
 
@@ -112,6 +111,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
         let mut colors = BTreeMap::<Indent, Color>::new();
         let mut timer = 0;
+        parents.insert(from.clone(), VertexProperties{parent: None, time_in: Some(timer), time_out: None});
         self._dfs(from, &mut timer, &mut parents, &mut colors);
         parents
     }
@@ -418,7 +418,7 @@ fn test_dfs() {
     graph.add_oriented_edge(2, 3, 0.0);
     graph.add_oriented_edge(3, 5, 0.0);
 
-    let res = graph.bfs(1);
+    let res = graph.dfs(1);
     assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
 }
 
