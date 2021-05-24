@@ -52,6 +52,9 @@
 #### Data compression:
 - Huffman algorithm
 
+#### Data Structure:
+- DSU (disjoint-set-union)
+
 <hr/>
 
 ### Example

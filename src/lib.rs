@@ -24,3 +24,5 @@ pub mod bloom_filter;
 pub mod sparse_table;
 /// Binary Tree
 pub mod binary_tree;
+/// DSU (disjoint-set-union)
+pub mod dsu;
