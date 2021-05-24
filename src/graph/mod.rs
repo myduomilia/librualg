@@ -605,5 +605,7 @@ fn test_kruskal() {
     graph.add_oriented_edge('G', 'F', 11.0);
     graph.add_oriented_edge('F', 'D', 6.0);
     graph.add_oriented_edge('D', 'F', 6.0);
-    graph.kruskal();
+    let tree = graph.kruskal();
+    assert_eq!(vec!['A', 'B', 'E', 'G'], tree.search_path('G', &tree.bfs('A')).unwrap());
+    assert_eq!(vec!['A', 'B', 'E', 'C'], tree.search_path('C', &tree.bfs('A')).unwrap());
 }
