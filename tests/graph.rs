@@ -83,3 +83,31 @@ fn topology_sort() {
 
     assert_eq!(graph.topological_sort(), vec!["a", "b", "c", "d", "e"]);
 }
+
+#[test]
+fn test_kruskal() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge('A', 'B', 7.0);
+    graph.add_oriented_edge('B', 'A', 7.0);
+    graph.add_oriented_edge('A', 'D', 5.0);
+    graph.add_oriented_edge('D', 'A', 5.0);
+    graph.add_oriented_edge('B', 'C', 8.0);
+    graph.add_oriented_edge('C', 'B', 8.0);
+    graph.add_oriented_edge('B', 'E', 7.0);
+    graph.add_oriented_edge('E', 'B', 7.0);
+    graph.add_oriented_edge('B', 'D', 9.0);
+    graph.add_oriented_edge('D', 'B', 9.0);
+    graph.add_oriented_edge('C', 'E', 5.0);
+    graph.add_oriented_edge('E', 'C', 5.0);
+    graph.add_oriented_edge('E', 'G', 9.0);
+    graph.add_oriented_edge('G', 'E', 9.0);
+    graph.add_oriented_edge('E', 'F', 8.0);
+    graph.add_oriented_edge('F', 'E', 8.0);
+    graph.add_oriented_edge('E', 'D', 15.0);
+    graph.add_oriented_edge('D', 'E', 15.0);
+    graph.add_oriented_edge('F', 'G', 11.0);
+    graph.add_oriented_edge('G', 'F', 11.0);
+    graph.add_oriented_edge('F', 'D', 6.0);
+    graph.add_oriented_edge('D', 'F', 6.0);
+    let tree = graph.kruskal();
+}

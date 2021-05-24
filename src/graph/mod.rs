@@ -326,6 +326,75 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         topology_vec
     }
 
+    /// Kruskal's algorithm
+    /// ```
+    /// use librualg::graph::Graph;
+    ///
+    /// let mut graph = Graph::new();
+    /// graph.add_oriented_edge('A', 'B', 7.0);
+    /// graph.add_oriented_edge('B', 'A', 7.0);
+    /// graph.add_oriented_edge('A', 'D', 5.0);
+    /// graph.add_oriented_edge('D', 'A', 5.0);
+    /// let tree = graph.kruskal();
+    /// ```
+
+    pub fn kruskal(&self) -> Graph<Indent> {
+
+        struct D<Indent> {
+            from: Indent,
+            to: Indent,
+            dist: f32,
+        }
+
+        impl <Indent> std::cmp::PartialEq for D<Indent> {
+            fn eq(&self, other: &D<Indent>) -> bool {
+                self.dist == other.dist
+            }
+        }
+
+        impl <Indent> Eq for D<Indent> {}
+
+        impl <Indent> std::cmp::Ord for D<Indent> {
+            fn cmp(&self, other: &Self) -> Ordering {
+                other.dist.partial_cmp(&self.dist).unwrap()
+            }
+        }
+
+        impl <Indent> std::cmp::PartialOrd for D <Indent> {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(other.dist.partial_cmp(&self.dist).unwrap())
+            }
+        }
+
+        let mut graph: Graph<Indent> = Graph::new();
+        let mut queue = BinaryHeap::new();
+        let mut union = BTreeMap::new();
+        for (idx, (from, edges)) in self.adj.iter().enumerate() {
+            union.insert(from.clone(), idx + 1);
+            for edge in edges {
+                queue.push(D{
+                    from: from.clone(),
+                    to: edge.to.clone(),
+                    dist: edge.weight
+                });
+            }
+        }
+        while let Some (value) = queue.pop() {
+            let left = *union.get(&value.from).unwrap();
+            let right = *union.get(&value.to).unwrap();
+            if left != right {
+                graph.add_oriented_edge(value.from.clone(), value.to.clone(), value.dist);
+                graph.add_oriented_edge(value.to.clone(), value.from.clone(), value.dist);
+                for (_, value) in union.iter_mut() {
+                    if *value == right {
+                        *value = left;
+                    }
+                }
+            }
+        }
+        graph
+    }
+
     /// Adds a new oriented edge to the graph
     pub fn add_oriented_edge(&mut self, from: Indent, to: Indent, weight: f32) {
         match self.adj.get_mut(&from) {
@@ -509,4 +578,32 @@ fn topology_sort() {
     graph.add_oriented_edge("y", "z", 0.0);
 
     assert_eq!(graph.topological_sort(), vec!["a", "b", "c", "d", "e", "x", "y", "z"]);
+}
+
+#[test]
+fn test_kruskal() {
+    let mut graph = Graph::new();
+    graph.add_oriented_edge('A', 'B', 7.0);
+    graph.add_oriented_edge('B', 'A', 7.0);
+    graph.add_oriented_edge('A', 'D', 5.0);
+    graph.add_oriented_edge('D', 'A', 5.0);
+    graph.add_oriented_edge('B', 'C', 8.0);
+    graph.add_oriented_edge('C', 'B', 8.0);
+    graph.add_oriented_edge('B', 'E', 7.0);
+    graph.add_oriented_edge('E', 'B', 7.0);
+    graph.add_oriented_edge('B', 'D', 9.0);
+    graph.add_oriented_edge('D', 'B', 9.0);
+    graph.add_oriented_edge('C', 'E', 5.0);
+    graph.add_oriented_edge('E', 'C', 5.0);
+    graph.add_oriented_edge('E', 'G', 9.0);
+    graph.add_oriented_edge('G', 'E', 9.0);
+    graph.add_oriented_edge('E', 'F', 8.0);
+    graph.add_oriented_edge('F', 'E', 8.0);
+    graph.add_oriented_edge('E', 'D', 15.0);
+    graph.add_oriented_edge('D', 'E', 15.0);
+    graph.add_oriented_edge('F', 'G', 11.0);
+    graph.add_oriented_edge('G', 'F', 11.0);
+    graph.add_oriented_edge('F', 'D', 6.0);
+    graph.add_oriented_edge('D', 'F', 6.0);
+    graph.kruskal();
 }

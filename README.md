@@ -41,6 +41,7 @@
 - Connected components
 - Strongly connected components
 - Topologic sort (for DAG)
+- Kruskal's algorithm
 
 #### Mathematics algorithms:
 - The Greatest Common Divisor (GCD)
