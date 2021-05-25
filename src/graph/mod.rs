@@ -1,6 +1,7 @@
 use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
 use std::cmp::{Ordering};
+use crate::dsu::{DSUCloneable};
 
 enum Color {
     Grey = 1,
@@ -367,29 +368,24 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         }
 
         let mut graph: Graph<Indent> = Graph::new();
-        let mut queue = BinaryHeap::new();
-        let mut union = BTreeMap::new();
-        for (idx, (from, edges)) in self.adj.iter().enumerate() {
-            union.insert(from.clone(), idx + 1);
+        let mut heap = BinaryHeap::new();
+        let mut dsu = DSUCloneable::new();
+        for (from, edges) in &self.adj {
+            dsu.make_set(from.clone());
             for edge in edges {
-                queue.push(D{
+                heap.push(D{
                     from: from.clone(),
                     to: edge.to.clone(),
                     dist: edge.weight
                 });
             }
         }
-        while let Some (value) = queue.pop() {
-            let left = *union.get(&value.from).unwrap();
-            let right = *union.get(&value.to).unwrap();
-            if left != right {
+
+        while let Some (value) = heap.pop() {
+            if dsu.find_set(value.from.clone()) != dsu.find_set(value.to.clone()) {
+                dsu.union_sets(value.from.clone(), value.to.clone());
                 graph.add_oriented_edge(value.from.clone(), value.to.clone(), value.dist);
                 graph.add_oriented_edge(value.to.clone(), value.from.clone(), value.dist);
-                for (_, value) in union.iter_mut() {
-                    if *value == right {
-                        *value = left;
-                    }
-                }
             }
         }
         graph
