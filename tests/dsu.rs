@@ -1,8 +1,8 @@
-use librualg::dsu::DSU;
+use librualg::dsu::DSURef;
 
 #[test]
 fn test_dsu() {
-    let mut dsu = DSU::new();
+    let mut dsu = DSURef::new();
     let v = (0..10).collect::<Vec<u32>>();
     for i in &v {
         dsu.make_set(i);

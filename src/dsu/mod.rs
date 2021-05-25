@@ -2,9 +2,9 @@ use std::collections::BTreeMap;
 
 /// DSU
 /// ```
-/// use librualg::dsu::{DSU, DSUCloneable};
+/// use librualg::dsu::{DSURef, DSU};
 ///
-/// let mut dsu = DSU::new();
+/// let mut dsu = DSURef::new();
 /// let v = (0..10).collect::<Vec<u32>>();
 /// for i in &v {
 ///     dsu.make_set(i);
@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 /// assert_ne!(dsu.find_set(&v[2]), dsu.find_set(&v[8]));
 /// assert_eq!(dsu.find_set(&v[1]), dsu.find_set(&v[3]));
 ///
-/// let mut dsu = DSUCloneable::new();
+/// let mut dsu = DSU::new();
 /// for i in 0..10 {
 ///     dsu.make_set(i);
 /// }
@@ -30,13 +30,13 @@ use std::collections::BTreeMap;
 /// assert_eq!(dsu.find_set(1), dsu.find_set(3));
 /// ```
 
-pub struct DSU <'a, T> where T: Eq + Ord {
+pub struct DSURef<'a, T> where T: Eq + Ord {
     parent: BTreeMap<&'a T, &'a T>
 }
 
-impl <'a, T> DSU<'a, T> where T: Eq + Ord {
+impl <'a, T> DSURef<'a, T> where T: Eq + Ord {
     pub fn new() -> Self {
-        DSU{
+        DSURef {
             parent: BTreeMap::new(),
         }
     }
@@ -70,13 +70,13 @@ impl <'a, T> DSU<'a, T> where T: Eq + Ord {
     }
 }
 
-pub struct DSUCloneable<T> where T: Eq + Ord + Clone {
+pub struct DSU<T> where T: Eq + Ord + Clone {
     parent: BTreeMap<T, T>
 }
 
-impl <T> DSUCloneable<T> where T: Eq + Ord + Clone {
+impl <T> DSU<T> where T: Eq + Ord + Clone {
     pub fn new() -> Self {
-        DSUCloneable{
+        DSU {
             parent: BTreeMap::new(),
         }
     }
@@ -112,7 +112,7 @@ impl <T> DSUCloneable<T> where T: Eq + Ord + Clone {
 
 #[test]
 fn test_dsu() {
-    let mut dsu = DSU::new();
+    let mut dsu = DSURef::new();
     let v = (0..10).collect::<Vec<u32>>();
     for i in &v {
         dsu.make_set(i);
@@ -130,7 +130,7 @@ fn test_dsu() {
 
 #[test]
 fn test_dsu_cloneable() {
-    let mut dsu = DSUCloneable::new();
+    let mut dsu = DSU::new();
     for i in 0..10 {
         dsu.make_set(i);
     }

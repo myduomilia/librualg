@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
 use std::cmp::{Ordering};
-use crate::dsu::{DSUCloneable};
+use crate::dsu::{DSU};
 
 enum Color {
     Grey = 1,
@@ -369,7 +369,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
 
         let mut graph: Graph<Indent> = Graph::new();
         let mut heap = BinaryHeap::new();
-        let mut dsu = DSUCloneable::new();
+        let mut dsu = DSU::new();
         for (from, edges) in &self.adj {
             dsu.make_set(from.clone());
             for edge in edges {
