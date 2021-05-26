@@ -578,6 +578,78 @@ impl GraphNum {
         parents
     }
 
+    /// Dijkstra algorithm.
+    /// Returns an ancestor vector along the graph traversal path and distances to the other vertexs
+    ///```
+    /// use librualg::graph::GraphNum;
+    ///
+    /// let mut graph = GraphNum::new(10);
+    ///
+    /// graph.add_vertex(1);
+    /// graph.add_vertex(2);
+    /// graph.add_vertex(3);
+    /// graph.add_vertex(5);
+    /// graph.add_vertex(7);
+    ///
+    /// graph.add_oriented_edge(1, 2, 2.0);
+    /// graph.add_oriented_edge(2, 3, 5.0);
+    /// graph.add_oriented_edge(3, 5, 7.0);
+    /// graph.add_oriented_edge(1, 5, 19.0);
+    ///
+    /// let (parents, distances) = graph.dijkstra(1);
+    /// assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 3, 5]);
+    /// assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
+    /// assert_eq!(distances[5].unwrap(), 14.0);
+    /// assert_eq!(distances[7], None);
+    /// ```
+    pub fn dijkstra(&self, from: usize) -> (Vec<VertexNumProperties>, Vec<Option<f32>>) {
+        let mut parents = vec![VertexNumProperties::default(); self.adj.len()];
+        let mut visited = vec![false; self.adj.len()];
+        let mut distances = vec![None; self.adj.len()];
+
+        struct D {
+            node: usize,
+            dist: f32,
+        }
+        impl std::cmp::PartialEq for D {
+            fn eq(&self, other: &D) -> bool {
+                self.dist == other.dist
+            }
+        }
+
+        impl Eq for D {}
+
+        impl std::cmp::Ord for D {
+            fn cmp(&self, other: &Self) -> Ordering {
+                other.dist.partial_cmp(&self.dist).unwrap()
+            }
+        }
+
+        impl std::cmp::PartialOrd for D {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(other.dist.partial_cmp(&self.dist).unwrap())
+            }
+        }
+
+        let mut heap = BinaryHeap::<D>::new();
+        distances[from] = Some(0.0);
+        heap.push(D{ node: from, dist: 0.0});
+        while !heap.is_empty() {
+            let d = heap.pop().unwrap();
+            visited[d.node] = true;
+            if self.adj[d.node].as_ref().is_some() {
+                for edge in self.adj[d.node].as_ref().unwrap() {
+                    if !visited[edge.to] && edge.weight + d.dist < distances[edge.to].unwrap_or(f32::MAX) {
+                        parents[edge.to] = VertexNumProperties{parent: Some(d.node.clone()), time_in: None, time_out: None};
+                        distances[edge.to] = Some(edge.weight + d.dist);
+                        heap.push(D{node: edge.to.clone(), dist: distances[edge.to].unwrap()});
+                    }
+                }
+            }
+        }
+        (parents, distances)
+    }
+
     pub fn search_path(&self, mut target: usize, parents: &[VertexNumProperties]) -> Option<Vec<usize>> {
         if parents[target].parent.is_none() {
             return None;
@@ -799,4 +871,26 @@ fn test_dfs_num() {
 
     let res = graph.dfs(1);
     assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
+}
+
+#[test]
+fn test_dijkstra_num() {
+    let mut graph = GraphNum::new(10);
+
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(5);
+    graph.add_vertex(7);
+
+    graph.add_oriented_edge(1, 2, 2.0);
+    graph.add_oriented_edge(2, 3, 5.0);
+    graph.add_oriented_edge(3, 5, 7.0);
+    graph.add_oriented_edge(1, 5, 19.0);
+
+    let (parents, distances) = graph.dijkstra(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 3, 5]);
+    assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
+    assert_eq!(distances[5].unwrap(), 14.0);
+    assert_eq!(distances[7], None);
 }

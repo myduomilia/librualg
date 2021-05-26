@@ -157,3 +157,24 @@ fn test_dfs_num() {
     let res = graph.dfs(1);
     assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
 }
+#[test]
+fn test_dijkstra_num() {
+    let mut graph = GraphNum::new(10);
+
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(5);
+    graph.add_vertex(7);
+
+    graph.add_oriented_edge(1, 2, 2.0);
+    graph.add_oriented_edge(2, 3, 5.0);
+    graph.add_oriented_edge(3, 5, 7.0);
+    graph.add_oriented_edge(1, 5, 19.0);
+
+    let (parents, distances) = graph.dijkstra(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 3, 5]);
+    assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
+    assert_eq!(distances[5].unwrap(), 14.0);
+    assert_eq!(distances[7], None);
+}
