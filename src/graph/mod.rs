@@ -553,7 +553,9 @@ impl GraphNum {
     /// DFS (Depth-First Search) algorithm.
     /// Returns an ancestor vector along the graph traversal path
     ///```
-    /// use librualg::graph::Graph;
+    /// use librualg::graph::GraphNum;
+    ///
+    /// let mut graph = GraphNum::new(10);
     ///
     /// graph.add_vertex(1);
     /// graph.add_vertex(2);
