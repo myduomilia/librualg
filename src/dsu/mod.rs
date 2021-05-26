@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 /// DSU
 /// ```
-/// use librualg::dsu::{DSURef, DSU};
+/// use librualg::dsu::{DSURef, DSU, DSUNum};
 ///
 /// let mut dsu = DSURef::new();
 /// let v = (0..10).collect::<Vec<u32>>();
@@ -28,6 +28,19 @@ use std::collections::BTreeMap;
 /// assert_eq!(dsu.find_set(2), dsu.find_set(7));
 /// assert_ne!(dsu.find_set(2), dsu.find_set(8));
 /// assert_eq!(dsu.find_set(1), dsu.find_set(3));
+///
+/// let mut dsu = DSUNum::new(10);
+/// for i in 1..=10 {
+///     dsu.make_set(i);
+/// }
+/// dsu.union_sets(1, 2);
+/// dsu.union_sets(2, 3);
+/// dsu.union_sets(2, 7);
+///
+/// assert_eq!(dsu.find_set(2), dsu.find_set(7));
+/// assert_ne!(dsu.find_set(2), dsu.find_set(8));
+/// assert_eq!(dsu.find_set(1), dsu.find_set(3));
+/// assert_ne!(dsu.find_set(1), dsu.find_set(9));
 /// ```
 
 pub struct DSURef<'a, T> where T: Eq + Ord {
@@ -136,6 +149,46 @@ impl <T> DSU<T> where T: Eq + Ord + Clone {
     }
 }
 
+pub struct DSUNum {
+    parent: Vec::<usize>,
+    ranks: Vec::<usize>
+}
+
+impl DSUNum {
+    pub fn new(n: usize) -> Self {
+        DSUNum {
+            parent: vec![0; n + 1],
+            ranks: vec![1; n + 1]
+        }
+    }
+    pub fn make_set(&mut self, value: usize) {
+        self.parent[value] = value;
+    }
+
+    pub fn find_set(&mut self, value: usize) -> usize {
+        if value == self.parent[value] {
+            return value;
+        }
+        let next = self.find_set(self.parent[value]);
+        self.parent[value] = next;
+        return next;
+    }
+
+    pub fn union_sets(&mut self, first: usize, second: usize) {
+        let first = self.find_set(first);
+        let second = self.find_set(second);
+        if first != second {
+            if self.ranks[first] < self.ranks[second] {
+                self.parent[second] = first;
+                self.ranks[second] += self.ranks[first];
+            } else {
+                self.parent[first] = second;
+                self.ranks[first] += self.ranks[second];
+            }
+        }
+    }
+}
+
 #[test]
 fn test_dsu_ref() {
     let mut dsu = DSURef::new();
@@ -169,4 +222,20 @@ fn test_dsu() {
     assert_eq!(dsu.find_set(1), dsu.find_set(3));
     assert_ne!(dsu.find_set(1), dsu.find_set(9));
     assert_eq!(dsu.find_set(11), None);
+}
+
+#[test]
+fn test_dsu_num() {
+    let mut dsu = DSUNum::new(10);
+    for i in 1..=10 {
+        dsu.make_set(i);
+    }
+    dsu.union_sets(1, 2);
+    dsu.union_sets(2, 3);
+    dsu.union_sets(2, 7);
+
+    assert_eq!(dsu.find_set(2), dsu.find_set(7));
+    assert_ne!(dsu.find_set(2), dsu.find_set(8));
+    assert_eq!(dsu.find_set(1), dsu.find_set(3));
+    assert_ne!(dsu.find_set(1), dsu.find_set(9));
 }
