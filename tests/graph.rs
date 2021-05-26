@@ -1,6 +1,6 @@
 extern crate librualg;
 
-use librualg::graph::Graph;
+use librualg::graph::{Graph, GraphNum};
 
 #[test]
 fn test_bfs() {
@@ -112,4 +112,48 @@ fn test_kruskal() {
     let tree = graph.kruskal();
     assert_eq!(vec!['A', 'B', 'E', 'G'], tree.search_path('G', &tree.bfs('A')).unwrap());
     assert_eq!(vec!['A', 'B', 'E', 'C'], tree.search_path('C', &tree.bfs('A')).unwrap());
+}
+
+#[test]
+fn test_bfs_num() {
+    let mut graph = GraphNum::new(20);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(8);
+    graph.add_vertex(17);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(2, 4, 0.0);
+    graph.add_oriented_edge(2, 5, 0.0);
+    graph.add_oriented_edge(4, 8, 0.0);
+    graph.add_oriented_edge(8, 17, 0.0);
+    let parents = graph.bfs(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
+    assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
+
+    graph.add_oriented_edge(17, 1, 0.0);
+    let parents = graph.bfs(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
+    assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
+
+    let parents = graph.bfs(11);
+    assert_eq!(graph.search_path(11, &parents), None);
+}
+
+#[test]
+fn test_dfs_num() {
+    let mut graph = GraphNum::new(10);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(5);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 5, 0.0);
+
+    let res = graph.dfs(1);
+    assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
 }

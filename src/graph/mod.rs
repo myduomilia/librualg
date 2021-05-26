@@ -3,7 +3,9 @@ use std::option::Option::Some;
 use std::cmp::{Ordering};
 use crate::dsu::{DSU};
 
+#[derive(Copy, Clone, PartialOrd, PartialEq)]
 enum Color {
+    White = 0,
     Grey = 1,
     Black = 2
 }
@@ -441,6 +443,153 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
     }
 }
 
+#[derive(Clone, Copy, Default)]
+pub struct VertexNumProperties {
+    parent: Option<usize>,
+    #[allow(dead_code)]
+    time_in: Option<usize>,
+    #[allow(dead_code)]
+    time_out: Option<usize>
+}
+
+#[derive(Clone, Copy)]
+struct EdgeNum  {
+    to: usize,
+    weight: f32,
+}
+
+pub struct GraphNum  {
+    adj: Vec::<Option<Vec<EdgeNum>>>,
+}
+
+impl GraphNum {
+    pub fn new(n: usize) -> Self {
+        GraphNum {
+            adj: vec![None; n + 1]
+        }
+    }
+
+    /// Adds a new vertex to the graph
+    pub fn add_vertex(&mut self, vertex: usize) {
+        self.adj[vertex] = Some(Vec::new());
+    }
+    /// Adds a new oriented edge to the graph
+    pub fn add_oriented_edge(&mut self, from: usize, to: usize, weight: f32) {
+        self.adj[from].as_mut().unwrap().push(EdgeNum{ to, weight });
+    }
+
+    /// BFS (Breadth-First Search) algorithm.
+    /// Returns an ancestor vector along the graph traversal path
+    ///```
+    /// use librualg::graph::GraphNum;
+    ///
+    /// let mut graph = GraphNum::new(20);
+    /// graph.add_vertex(1);
+    /// graph.add_vertex(2);
+    /// graph.add_vertex(3);
+    /// graph.add_vertex(4);
+    /// graph.add_vertex(5);
+    /// graph.add_vertex(8);
+    /// graph.add_vertex(17);
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(2, 4, 0.0);
+    /// graph.add_oriented_edge(2, 5, 0.0);
+    /// graph.add_oriented_edge(4, 8, 0.0);
+    /// graph.add_oriented_edge(8, 17, 0.0);
+    /// let parents = graph.bfs(1);
+    /// assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
+    /// assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
+    ///
+    /// graph.add_oriented_edge(17, 1, 0.0);
+    /// let parents = graph.bfs(1);
+    /// assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
+    ///  assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
+    ///
+    /// let parents = graph.bfs(11);
+    /// assert_eq!(graph.search_path(11, &parents), None);
+    ///```
+
+    pub fn bfs(&self, from: usize) -> Vec<VertexNumProperties> {
+        let mut queue = VecDeque::new();
+        let mut parents = vec![VertexNumProperties::default(); self.adj.len()];
+        let mut visited = vec![false; self.adj.len()];
+
+        if self.adj[from].is_some() {
+            queue.push_back(from);
+            visited[from] = true;
+            parents[from] = VertexNumProperties {parent: None, time_in: None, time_out: None};
+            while let Some(vertex) = queue.pop_front(){
+                if self.adj[vertex].is_some() {
+                    for edge in self.adj[vertex].as_ref().unwrap().iter() {
+                        if !visited[edge.to] {
+                            parents[edge.to] = VertexNumProperties {parent: Some(vertex.clone()), time_in: None, time_out: None};
+                            queue.push_back(edge.to);
+                            visited[edge.to] = true;
+                        }
+                    }
+                }
+            }
+        }
+        parents
+    }
+
+    fn _dfs(&self, from: usize, timer: &mut usize,  parents: &mut Vec<VertexNumProperties>, colors: &mut Vec<Color>) {
+        *timer += 1;
+        colors[from] = Color::Grey;
+        if self.adj[from].is_some() {
+            for edge in self.adj[from].as_ref().unwrap().iter() {
+                if colors[edge.to] == Color::White {
+                    parents[edge.to] = VertexNumProperties{parent: Some(from.clone()), time_in: None, time_out: None};
+                    self._dfs(edge.to, timer, parents, colors);
+                }
+            }
+        }
+        colors[from] = Color::Black;
+        *timer += 1;
+        parents[from].time_out = Some(*timer);
+    }
+
+    /// DFS (Depth-First Search) algorithm.
+    /// Returns an ancestor vector along the graph traversal path
+    ///```
+    /// use librualg::graph::Graph;
+    ///
+    /// graph.add_vertex(1);
+    /// graph.add_vertex(2);
+    /// graph.add_vertex(3);
+    /// graph.add_vertex(5);
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(3, 5, 0.0);
+    ///
+    /// let res = graph.dfs(1);
+    /// assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
+    /// ```
+
+    pub fn dfs(&self, from: usize) -> Vec<VertexNumProperties> {
+        let mut parents = vec![VertexNumProperties::default(); self.adj.len()];
+        let mut colors = vec![Color::White; self.adj.len()];
+        let mut timer = 0;
+        parents[from] = VertexNumProperties{parent: None, time_in: Some(timer), time_out: None};
+        self._dfs(from, &mut timer, &mut parents, &mut colors);
+        parents
+    }
+
+    pub fn search_path(&self, mut target: usize, parents: &[VertexNumProperties]) -> Option<Vec<usize>> {
+        if parents[target].parent.is_none() {
+            return None;
+        }
+        let mut path = vec![target];
+        while let Some(next) = parents[target].parent{
+            path.push(next);
+            target = next;
+        }
+        path.reverse();
+        Some(path)
+    }
+}
+
 #[test]
 fn test_bfs() {
     let mut graph = Graph::<usize>::new();
@@ -604,4 +753,48 @@ fn test_kruskal() {
     let tree = graph.kruskal();
     assert_eq!(vec!['A', 'B', 'E', 'G'], tree.search_path('G', &tree.bfs('A')).unwrap());
     assert_eq!(vec!['A', 'B', 'E', 'C'], tree.search_path('C', &tree.bfs('A')).unwrap());
+}
+
+#[test]
+fn test_bfs_num() {
+    let mut graph = GraphNum::new(20);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(8);
+    graph.add_vertex(17);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(2, 4, 0.0);
+    graph.add_oriented_edge(2, 5, 0.0);
+    graph.add_oriented_edge(4, 8, 0.0);
+    graph.add_oriented_edge(8, 17, 0.0);
+    let parents = graph.bfs(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
+    assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
+
+    graph.add_oriented_edge(17, 1, 0.0);
+    let parents = graph.bfs(1);
+    assert_eq!(graph.search_path(5, &parents).unwrap(), vec![1, 2, 5]);
+    assert_eq!(graph.search_path(17, &parents).unwrap(), vec![1, 2, 4, 8, 17]);
+
+    let parents = graph.bfs(11);
+    assert_eq!(graph.search_path(11, &parents), None);
+}
+
+#[test]
+fn test_dfs_num() {
+    let mut graph = GraphNum::new(10);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(5);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 5, 0.0);
+
+    let res = graph.dfs(1);
+    assert_eq!(graph.search_path(5, &res).unwrap(), vec![1, 2, 3, 5]);
 }
