@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, VecDeque, BTreeMap, BinaryHeap};
 use std::option::Option::Some;
 use std::cmp::{Ordering};
-use crate::dsu::{DSU};
+use crate::dsu::{DSU, DSUNum};
 
 #[derive(Copy, Clone, PartialOrd, PartialEq)]
 enum Color {
@@ -789,6 +789,101 @@ impl GraphNum {
         topology_vec
     }
 
+    /// Kruskal's algorithm
+    /// ```
+    /// use librualg::graph::GraphNum;
+    ///
+    /// let mut graph = GraphNum::new(20);
+    ///
+    /// graph.add_vertex(1);
+    /// graph.add_vertex(2);
+    /// graph.add_vertex(3);
+    /// graph.add_vertex(4);
+    /// graph.add_vertex(5);
+    /// graph.add_vertex(6);
+    /// graph.add_vertex(7);
+    ///
+    /// graph.add_oriented_edge(1, 2, 7.0);
+    /// graph.add_oriented_edge(2, 1, 7.0);
+    /// graph.add_oriented_edge(1, 4, 5.0);
+    /// graph.add_oriented_edge(4, 1, 5.0);
+    /// graph.add_oriented_edge(2, 3, 8.0);
+    /// graph.add_oriented_edge(3, 2, 8.0);
+    /// graph.add_oriented_edge(2, 5, 7.0);
+    /// graph.add_oriented_edge(5, 2, 7.0);
+    /// graph.add_oriented_edge(2, 4, 9.0);
+    /// graph.add_oriented_edge(4, 2, 9.0);
+    /// graph.add_oriented_edge(3, 5, 5.0);
+    /// graph.add_oriented_edge(5, 3, 5.0);
+    /// graph.add_oriented_edge(5, 7, 9.0);
+    /// graph.add_oriented_edge(7, 5, 9.0);
+    /// graph.add_oriented_edge(5, 6, 8.0);
+    /// graph.add_oriented_edge(6, 5, 8.0);
+    /// graph.add_oriented_edge(5, 4, 15.0);
+    /// graph.add_oriented_edge(4, 5, 15.0);
+    /// graph.add_oriented_edge(6, 7, 11.0);
+    /// graph.add_oriented_edge(7, 6, 11.0);
+    /// graph.add_oriented_edge(6, 4, 6.0);
+    /// graph.add_oriented_edge(4, 6, 6.0);
+    /// let tree = graph.kruskal();
+    /// assert_eq!(vec![1, 2, 5, 7], tree.search_path(7, &tree.bfs(1)).unwrap());
+    /// assert_eq!(vec![1, 2, 5, 3], tree.search_path(3, &tree.bfs(1)).unwrap());
+    /// ```
+
+    pub fn kruskal(&self) -> GraphNum {
+        struct D {
+            from: usize,
+            to: usize,
+            dist: f32,
+        }
+
+        impl std::cmp::PartialEq for D {
+            fn eq(&self, other: &D) -> bool {
+                self.dist == other.dist
+            }
+        }
+
+        impl Eq for D {}
+
+        impl std::cmp::Ord for D {
+            fn cmp(&self, other: &Self) -> Ordering {
+                other.dist.partial_cmp(&self.dist).unwrap()
+            }
+        }
+
+        impl std::cmp::PartialOrd for D {
+            fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+                Some(other.dist.partial_cmp(&self.dist).unwrap())
+            }
+        }
+
+        let mut graph: GraphNum = GraphNum::new(self.adj.len() + 1);
+        let mut heap = BinaryHeap::new();
+        let mut dsu = DSUNum::new(graph.adj.len());
+        for (from, edges) in self.adj.iter().enumerate() {
+            if let Some(edges) = edges {
+                graph.add_vertex(from);
+                dsu.make_set(from);
+                for edge in edges {
+                    heap.push(D{
+                        from,
+                        to: edge.to,
+                        dist: edge.weight
+                    });
+                }
+            }
+        }
+
+        while let Some (value) = heap.pop() {
+            if dsu.find_set(value.from) != dsu.find_set(value.to) {
+                dsu.union_sets(value.from, value.to);
+                graph.add_oriented_edge(value.from, value.to, value.dist);
+                graph.add_oriented_edge(value.to, value.from, value.dist);
+            }
+        }
+        graph
+    }
+
     pub fn search_path(&self, mut target: usize, parents: &[VertexNumProperties]) -> Option<Vec<usize>> {
         if parents[target].parent.is_none() {
             return None;
@@ -1134,4 +1229,43 @@ fn topology_sort_num() {
     graph.add_oriented_edge(7, 8, 0.0);
 
     assert_eq!(graph.topological_sort(), vec![1, 2, 3, 4, 5, 6, 7, 8]);
+}
+
+#[test]
+fn test_kruskal_num() {
+    let mut graph = GraphNum::new(20);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+
+
+    graph.add_oriented_edge(1, 2, 7.0);
+    graph.add_oriented_edge(2, 1, 7.0);
+    graph.add_oriented_edge(1, 4, 5.0);
+    graph.add_oriented_edge(4, 1, 5.0);
+    graph.add_oriented_edge(2, 3, 8.0);
+    graph.add_oriented_edge(3, 2, 8.0);
+    graph.add_oriented_edge(2, 5, 7.0);
+    graph.add_oriented_edge(5, 2, 7.0);
+    graph.add_oriented_edge(2, 4, 9.0);
+    graph.add_oriented_edge(4, 2, 9.0);
+    graph.add_oriented_edge(3, 5, 5.0);
+    graph.add_oriented_edge(5, 3, 5.0);
+    graph.add_oriented_edge(5, 7, 9.0);
+    graph.add_oriented_edge(7, 5, 9.0);
+    graph.add_oriented_edge(5, 6, 8.0);
+    graph.add_oriented_edge(6, 5, 8.0);
+    graph.add_oriented_edge(5, 4, 15.0);
+    graph.add_oriented_edge(4, 5, 15.0);
+    graph.add_oriented_edge(6, 7, 11.0);
+    graph.add_oriented_edge(7, 6, 11.0);
+    graph.add_oriented_edge(6, 4, 6.0);
+    graph.add_oriented_edge(4, 6, 6.0);
+    let tree = graph.kruskal();
+    assert_eq!(vec![1, 2, 5, 7], tree.search_path(7, &tree.bfs(1)).unwrap());
+    assert_eq!(vec![1, 2, 5, 3], tree.search_path(3, &tree.bfs(1)).unwrap());
 }

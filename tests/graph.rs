@@ -245,3 +245,42 @@ fn test_strongly_connected_components_num() {
     assert_eq!(components[1], [3, 4, 8]);
     assert_eq!(components[2], [6, 7]);
 }
+
+#[test]
+fn test_kruskal_num() {
+    let mut graph = GraphNum::new(20);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+
+
+    graph.add_oriented_edge(1, 2, 7.0);
+    graph.add_oriented_edge(2, 1, 7.0);
+    graph.add_oriented_edge(1, 4, 5.0);
+    graph.add_oriented_edge(4, 1, 5.0);
+    graph.add_oriented_edge(2, 3, 8.0);
+    graph.add_oriented_edge(3, 2, 8.0);
+    graph.add_oriented_edge(2, 5, 7.0);
+    graph.add_oriented_edge(5, 2, 7.0);
+    graph.add_oriented_edge(2, 4, 9.0);
+    graph.add_oriented_edge(4, 2, 9.0);
+    graph.add_oriented_edge(3, 5, 5.0);
+    graph.add_oriented_edge(5, 3, 5.0);
+    graph.add_oriented_edge(5, 7, 9.0);
+    graph.add_oriented_edge(7, 5, 9.0);
+    graph.add_oriented_edge(5, 6, 8.0);
+    graph.add_oriented_edge(6, 5, 8.0);
+    graph.add_oriented_edge(5, 4, 15.0);
+    graph.add_oriented_edge(4, 5, 15.0);
+    graph.add_oriented_edge(6, 7, 11.0);
+    graph.add_oriented_edge(7, 6, 11.0);
+    graph.add_oriented_edge(6, 4, 6.0);
+    graph.add_oriented_edge(4, 6, 6.0);
+    let tree = graph.kruskal();
+    assert_eq!(vec![1, 2, 5, 7], tree.search_path(7, &tree.bfs(1)).unwrap());
+    assert_eq!(vec![1, 2, 5, 3], tree.search_path(3, &tree.bfs(1)).unwrap());
+}
