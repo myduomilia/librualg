@@ -42,6 +42,7 @@ fn test_connected_components() {
     assert_eq!(components[0], [1, 2, 3, 4]);
     assert_eq!(components[1], [5, 6, 7]);
     assert_eq!(components[2], [8, 9, 10, 11]);
+    assert_eq!(components.len(), 3);
 }
 
 #[test]
@@ -177,4 +178,70 @@ fn test_dijkstra_num() {
     assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
     assert_eq!(distances[5].unwrap(), 14.0);
     assert_eq!(distances[7], None);
+}
+
+#[test]
+fn test_connected_components_num() {
+    let mut graph = GraphNum::new(20);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+    graph.add_vertex(8);
+    graph.add_vertex(9);
+    graph.add_vertex(10);
+    graph.add_vertex(11);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 4, 0.0);
+
+    graph.add_oriented_edge(5, 6, 0.0);
+    graph.add_oriented_edge(6, 7, 0.0);
+
+    graph.add_oriented_edge(8, 9, 0.0);
+    graph.add_oriented_edge(9, 10, 0.0);
+    graph.add_oriented_edge(10, 11, 0.0);
+
+    let components = graph.connected_components();
+    assert_eq!(components[0], [1, 2, 3, 4]);
+    assert_eq!(components[1], [5, 6, 7]);
+    assert_eq!(components[2], [8, 9, 10, 11]);
+}
+
+#[test]
+fn test_strongly_connected_components_num() {
+    let mut graph = GraphNum::new(10);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+    graph.add_vertex(8);
+
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 6, 0.0);
+    graph.add_oriented_edge(5, 1, 0.0);
+    graph.add_oriented_edge(2, 5, 0.0);
+    graph.add_oriented_edge(5, 6, 0.0);
+
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(6, 7, 0.0);
+    graph.add_oriented_edge(7, 6, 0.0);
+    graph.add_oriented_edge(3, 7, 0.0);
+
+    graph.add_oriented_edge(3, 4, 0.0);
+    graph.add_oriented_edge(4, 3, 0.0);
+    graph.add_oriented_edge(4, 8, 0.0);
+    graph.add_oriented_edge(8, 4, 0.0);
+    graph.add_oriented_edge(8, 7, 0.0);
+
+    let components = graph.strongly_connected_components();
+    assert_eq!(components[0], [1, 2, 5]);
+    assert_eq!(components[1], [3, 4, 8]);
+    assert_eq!(components[2], [6, 7]);
 }

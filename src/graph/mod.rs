@@ -10,8 +10,16 @@ enum Color {
     Black = 2
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Color::White
+    }
+}
+
 pub struct VertexProperties<Indent> where Indent: Eq + Ord + Clone {
     parent: Option<Indent>,
+    #[allow(dead_code)]
+    color: Color,
     #[allow(dead_code)]
     time_in: Option<u32>,
     #[allow(dead_code)]
@@ -64,12 +72,12 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         if self.adj.get(&from).is_some() {
             queue.push_back(&from);
             visited.insert(&from);
-            parents.insert(Clone::clone(&from), VertexProperties {parent: None, time_in: None, time_out: None});
+            parents.insert(Clone::clone(&from), VertexProperties {parent: None, time_in: None, time_out: None, color: Color::White});
             while let Some(vertex) = queue.pop_front(){
                 if self.adj.get(&vertex).is_some() {
                     for edge in self.adj.get(&vertex).unwrap().iter() {
                         if !visited.contains(&edge.to) {
-                            parents.insert(edge.to.clone(), VertexProperties {parent: Some(vertex.clone()), time_in: None, time_out: None});
+                            parents.insert(edge.to.clone(), VertexProperties {parent: Some(vertex.clone()), time_in: None, time_out: None, color: Color::White});
                             queue.push_back(&edge.to);
                             visited.insert(&edge.to);
                         }
@@ -86,7 +94,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         if self.adj.get(&from).is_some() {
             for edge in self.adj.get(&from).unwrap().iter() {
                 if colors.get(&edge.to).is_none() {
-                    parents.insert(edge.to.clone(), VertexProperties{parent: Some(from.clone()), time_in: None, time_out: None});
+                    parents.insert(edge.to.clone(), VertexProperties{parent: Some(from.clone()), time_in: None, time_out: None, color: Color::White});
                     self._dfs(edge.to.clone(), timer, parents, colors);
                 }
             }
@@ -94,6 +102,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         *(colors.get_mut(&from).unwrap()) = Color::Black;
         *timer += 1;
         parents.get_mut(&from).unwrap().time_out = Some(*timer);
+        parents.get_mut(&from).unwrap().color = Color::Black;
     }
 
     /// DFS (Depth-First Search) algorithm.
@@ -114,7 +123,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
         let mut parents = BTreeMap::<Indent, VertexProperties<Indent>>::new();
         let mut colors = BTreeMap::<Indent, Color>::new();
         let mut timer = 0;
-        parents.insert(from.clone(), VertexProperties{parent: None, time_in: Some(timer), time_out: None});
+        parents.insert(from.clone(), VertexProperties{parent: None, time_in: Some(timer), time_out: None, color: Color::White});
         self._dfs(from, &mut timer, &mut parents, &mut colors);
         parents
     }
@@ -176,7 +185,7 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
             if self.adj.get(&d.node).is_some() {
                 for edge in self.adj.get(&d.node).unwrap() {
                     if !visited.contains(&edge.to) && edge.weight + d.dist < *distances.get(&edge.to).unwrap_or(&f32::MAX) {
-                        parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None});
+                        parents.insert(edge.to.clone(), VertexProperties{parent: Some(d.node.clone()), time_in: None, time_out: None, color: Color::White});
                         distances.insert(edge.to.clone(), edge.weight + d.dist);
                         heap.push(D{node: edge.to.clone(), dist: *distances.get(&edge.to).unwrap()});
                     }
@@ -447,6 +456,8 @@ impl <Indent> Graph <Indent> where Indent: Eq + Ord + Clone {
 pub struct VertexNumProperties {
     parent: Option<usize>,
     #[allow(dead_code)]
+    color: Color,
+    #[allow(dead_code)]
     time_in: Option<usize>,
     #[allow(dead_code)]
     time_out: Option<usize>
@@ -518,12 +529,12 @@ impl GraphNum {
         if self.adj[from].is_some() {
             queue.push_back(from);
             visited[from] = true;
-            parents[from] = VertexNumProperties {parent: None, time_in: None, time_out: None};
+            parents[from] = VertexNumProperties {parent: None, time_in: None, time_out: None, color: Color::White};
             while let Some(vertex) = queue.pop_front(){
                 if self.adj[vertex].is_some() {
                     for edge in self.adj[vertex].as_ref().unwrap().iter() {
                         if !visited[edge.to] {
-                            parents[edge.to] = VertexNumProperties {parent: Some(vertex.clone()), time_in: None, time_out: None};
+                            parents[edge.to] = VertexNumProperties {parent: Some(vertex.clone()), time_in: None, time_out: None, color: Color::White};
                             queue.push_back(edge.to);
                             visited[edge.to] = true;
                         }
@@ -540,7 +551,7 @@ impl GraphNum {
         if self.adj[from].is_some() {
             for edge in self.adj[from].as_ref().unwrap().iter() {
                 if colors[edge.to] == Color::White {
-                    parents[edge.to] = VertexNumProperties{parent: Some(from.clone()), time_in: None, time_out: None};
+                    parents[edge.to] = VertexNumProperties{parent: Some(from.clone()), time_in: None, time_out: None, color: Color::White};
                     self._dfs(edge.to, timer, parents, colors);
                 }
             }
@@ -548,6 +559,7 @@ impl GraphNum {
         colors[from] = Color::Black;
         *timer += 1;
         parents[from].time_out = Some(*timer);
+        parents[from].color = Color::Black;
     }
 
     /// DFS (Depth-First Search) algorithm.
@@ -573,7 +585,7 @@ impl GraphNum {
         let mut parents = vec![VertexNumProperties::default(); self.adj.len()];
         let mut colors = vec![Color::White; self.adj.len()];
         let mut timer = 0;
-        parents[from] = VertexNumProperties{parent: None, time_in: Some(timer), time_out: None};
+        parents[from] = VertexNumProperties{parent: None, time_in: Some(timer), time_out: None, color: Color::White};
         self._dfs(from, &mut timer, &mut parents, &mut colors);
         parents
     }
@@ -640,7 +652,7 @@ impl GraphNum {
             if self.adj[d.node].as_ref().is_some() {
                 for edge in self.adj[d.node].as_ref().unwrap() {
                     if !visited[edge.to] && edge.weight + d.dist < distances[edge.to].unwrap_or(f32::MAX) {
-                        parents[edge.to] = VertexNumProperties{parent: Some(d.node.clone()), time_in: None, time_out: None};
+                        parents[edge.to] = VertexNumProperties{parent: Some(d.node.clone()), time_in: None, time_out: None, color: Color::White};
                         distances[edge.to] = Some(edge.weight + d.dist);
                         heap.push(D{node: edge.to.clone(), dist: distances[edge.to].unwrap()});
                     }
@@ -648,6 +660,133 @@ impl GraphNum {
             }
         }
         (parents, distances)
+    }
+
+    /// Get connected components
+    ///```
+    /// use librualg::graph::GraphNum;
+    ///
+    /// let mut graph = GraphNum::new(20);
+    /// graph.add_vertex(1);
+    /// graph.add_vertex(2);
+    /// graph.add_vertex(3);
+    /// graph.add_vertex(4);
+    /// graph.add_vertex(5);
+    /// graph.add_vertex(6);
+    /// graph.add_vertex(7);
+    /// graph.add_vertex(8);
+    /// graph.add_vertex(9);
+    /// graph.add_vertex(10);
+    /// graph.add_vertex(11);
+    /// graph.add_oriented_edge(1, 2, 0.0);
+    /// graph.add_oriented_edge(2, 3, 0.0);
+    /// graph.add_oriented_edge(3, 4, 0.0);
+    ///
+    /// graph.add_oriented_edge(5, 6, 0.0);
+    /// graph.add_oriented_edge(6, 7, 0.0);
+    ///
+    /// graph.add_oriented_edge(8, 9, 0.0);
+    /// graph.add_oriented_edge(9, 10, 0.0);
+    /// graph.add_oriented_edge(10, 11, 0.0);
+    ///
+    /// let components = graph.connected_components();
+    /// assert_eq!(components[0], [1, 2, 3, 4]);
+    /// assert_eq!(components[1], [5, 6, 7]);
+    /// assert_eq!(components[2], [8, 9, 10, 11]);
+    /// ```
+    pub fn connected_components(&self) -> Vec<Vec<usize>> {
+        let mut components = vec![];
+        let mut visited = vec![false; self.adj.len()];
+        for (vertex, edges) in self.adj.iter().enumerate() {
+            if let Some(_) = edges {
+                if !visited[vertex] {
+                    let mut queue = VecDeque::new();
+                    let mut vec = vec![];
+                    visited[vertex] = true;
+                    queue.push_back(vertex);
+                    while let Some(vertex) = queue.pop_front(){
+                        vec.push(vertex);
+                        if self.adj[vertex].is_some() {
+                            for edge in self.adj[vertex].as_ref().unwrap() {
+                                if !visited[edge.to] {
+                                    queue.push_back(edge.to);
+                                    visited[edge.to] = true;
+                                }
+                            }
+                        }
+                    }
+                    components.push(vec)
+                }
+            }
+        }
+        components
+    }
+
+    pub fn strongly_connected_components(&self) -> Vec<Vec<usize>> {
+        let mut components = vec![];
+        let mut graph_transp = GraphNum::new(self.adj.len() - 1);
+        for (vertex, edges) in self.adj.iter().enumerate() {
+            if let Some(_) = edges {
+                graph_transp.add_vertex(vertex);
+            }
+        }
+        for (vertex, edges) in self.adj.iter().enumerate() {
+            if let Some(edges) = edges {
+                for edge in edges {
+                    graph_transp.add_oriented_edge(edge.to, vertex, edge.weight);
+                }
+            }
+        }
+        let mut visited = vec![false; self.adj.len()];
+        let mut orders = Vec::with_capacity(self.adj.len());
+        for (vertex, edges) in self.adj.iter().enumerate() {
+            if let Some(_) = edges {
+                if !visited[vertex] {
+                    for (vertex, property) in self.dfs(vertex).iter().enumerate(){
+                        if self.adj[vertex].is_some() {
+                            if !visited[vertex] && property.color == Color::Black {
+                                visited[vertex] = true;
+                                orders.push(vertex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        let mut visited = vec![false; self.adj.len()];
+        for vertex in orders {
+            if !visited[vertex] {
+                let mut vec = vec![];
+                for (vertex, property) in graph_transp.dfs(vertex).iter().enumerate() {
+                    if graph_transp.adj[vertex].is_some() && property.color == Color::Black {
+                        if !visited[vertex] {
+                            visited[vertex] = true;
+                            vec.push(vertex);
+                        }
+                    }
+                }
+                components.push(vec);
+            }
+        }
+        components
+    }
+
+    pub fn topological_sort(&self) -> Vec<usize> {
+        let mut visited = vec![false; self.adj.len()];
+        let mut topology_vec = Vec::with_capacity(self.adj.len());
+        for (vertex, edges) in self.adj.iter().enumerate() {
+            if let Some(_) = edges {
+                if !visited[vertex] {
+                    for (vertex, property) in self.dfs(vertex).iter().enumerate() {
+                        if !visited[vertex] && property.color == Color::Black {
+                            visited[vertex] = true;
+                            topology_vec.push(vertex);
+                        }
+                    }
+                }
+            }
+        }
+        topology_vec
     }
 
     pub fn search_path(&self, mut target: usize, parents: &[VertexNumProperties]) -> Option<Vec<usize>> {
@@ -752,6 +891,7 @@ fn test_connected_components() {
     assert_eq!(components[0], [1, 2, 3, 4]);
     assert_eq!(components[1], [5, 6, 7]);
     assert_eq!(components[2], [8, 9, 10, 11]);
+    assert_eq!(components.len(), 3);
 }
 
 #[test]
@@ -774,10 +914,15 @@ fn test_strongly_connected_components() {
     graph.add_oriented_edge("h", "d", 0.0);
     graph.add_oriented_edge("h", "g", 0.0);
 
+    graph.add_oriented_edge("k", "m", 0.0);
+    graph.add_oriented_edge("m", "k", 0.0);
+
     let components = graph.strongly_connected_components();
     assert_eq!(components[0], ["a", "b", "e"]);
     assert_eq!(components[1], ["c", "d", "h"]);
     assert_eq!(components[2], ["f", "g"]);
+    assert_eq!(components[3], ["k", "m"]);
+    assert_eq!(components.len(), 4);
 }
 
 #[test]
@@ -893,4 +1038,100 @@ fn test_dijkstra_num() {
     assert_eq!(graph.search_path(3, &parents).unwrap(), vec![1, 2, 3]);
     assert_eq!(distances[5].unwrap(), 14.0);
     assert_eq!(distances[7], None);
+}
+
+#[test]
+fn test_connected_components_num() {
+    let mut graph = GraphNum::new(20);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+    graph.add_vertex(8);
+    graph.add_vertex(9);
+    graph.add_vertex(10);
+    graph.add_vertex(11);
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(3, 4, 0.0);
+
+    graph.add_oriented_edge(5, 6, 0.0);
+    graph.add_oriented_edge(6, 7, 0.0);
+
+    graph.add_oriented_edge(8, 9, 0.0);
+    graph.add_oriented_edge(9, 10, 0.0);
+    graph.add_oriented_edge(10, 11, 0.0);
+
+    let components = graph.connected_components();
+    assert_eq!(components[0], [1, 2, 3, 4]);
+    assert_eq!(components[1], [5, 6, 7]);
+    assert_eq!(components[2], [8, 9, 10, 11]);
+    assert_eq!(components.len(), 3);
+}
+
+#[test]
+fn test_strongly_connected_components_num() {
+    let mut graph = GraphNum::new(10);
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+    graph.add_vertex(8);
+
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(2, 6, 0.0);
+    graph.add_oriented_edge(5, 1, 0.0);
+    graph.add_oriented_edge(2, 5, 0.0);
+    graph.add_oriented_edge(5, 6, 0.0);
+
+    graph.add_oriented_edge(2, 3, 0.0);
+    graph.add_oriented_edge(6, 7, 0.0);
+    graph.add_oriented_edge(7, 6, 0.0);
+    graph.add_oriented_edge(3, 7, 0.0);
+
+    graph.add_oriented_edge(3, 4, 0.0);
+    graph.add_oriented_edge(4, 3, 0.0);
+    graph.add_oriented_edge(4, 8, 0.0);
+    graph.add_oriented_edge(8, 4, 0.0);
+    graph.add_oriented_edge(8, 7, 0.0);
+
+    let components = graph.strongly_connected_components();
+    assert_eq!(components[0], [1, 2, 5]);
+    assert_eq!(components[1], [3, 4, 8]);
+    assert_eq!(components[2], [6, 7]);
+}
+
+#[test]
+fn topology_sort_num() {
+    let mut graph = GraphNum::new(10);
+
+    graph.add_vertex(1);
+    graph.add_vertex(2);
+    graph.add_vertex(3);
+    graph.add_vertex(4);
+    graph.add_vertex(5);
+
+    graph.add_oriented_edge(1, 2, 0.0);
+    graph.add_oriented_edge(1, 3, 0.0);
+    graph.add_oriented_edge(1, 5, 0.0);
+    graph.add_oriented_edge(1, 4, 0.0);
+    graph.add_oriented_edge(2, 4, 0.0);
+    graph.add_oriented_edge(3, 4, 0.0);
+    graph.add_oriented_edge(3, 5, 0.0);
+
+    assert_eq!(graph.topological_sort(), vec![1, 2, 3, 4, 5]);
+
+    graph.add_vertex(6);
+    graph.add_vertex(7);
+    graph.add_vertex(8);
+    graph.add_oriented_edge(6, 7, 0.0);
+    graph.add_oriented_edge(7, 8, 0.0);
+
+    assert_eq!(graph.topological_sort(), vec![1, 2, 3, 4, 5, 6, 7, 8]);
 }
