@@ -55,6 +55,9 @@
 #### Data Structure:
 - DSU (disjoint-set-union)
 
+#### Sheduling:
+- Johnson's Algorithm For Scheduling
+
 <hr/>
 
 ### Example
