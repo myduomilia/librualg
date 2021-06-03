@@ -28,3 +28,5 @@ pub mod binary_tree;
 pub mod dsu;
 /// Sheduling algorithms
 pub mod sheduling;
+/// Sorting algorithms
+pub mod sort;
