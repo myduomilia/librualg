@@ -26,3 +26,7 @@ pub mod sparse_table;
 pub mod binary_tree;
 /// DSU (disjoint-set-union)
 pub mod dsu;
+/// Sheduling algorithms
+pub mod sheduling;
+/// Sorting algorithms
+pub mod sort;
