@@ -17,14 +17,18 @@ pub fn lower_bound<T>(container: &[T], key: &T) -> Option<usize>
     }
     let mut l = 0;
     let mut r = container.len() - 1;
-    while l < r {
-        let idx = l + (r - l) / 2;
-        if container[idx] < *key {
-            l = idx + 1;
-        } else {
-            r = idx;
+    unsafe {
+        let ptr = &container[0] as *const T;
+        while l < r {
+            let idx = l + (r - l) / 2;
+            if *ptr.offset(idx as isize) < *key {
+                l = idx + 1;
+            } else {
+                r = idx;
+            }
         }
     }
+
     match container[l] == *key {
         true => Some(l),
         _ => None
@@ -49,12 +53,15 @@ pub fn upper_bound<T>(container: &[T], key: &T) -> Option<usize>
     }
     let mut l = 0;
     let mut r = container.len() - 1;
-    while l < r {
-        let idx = r - (r - l) / 2;
-        if container[idx] <= *key {
-            l = idx;
-        } else {
-            r = idx - 1;
+    unsafe {
+        let ptr = &container[0] as *const T;
+        while l < r {
+            let idx = r - (r - l) / 2;
+            if *ptr.offset(idx as isize) <= *key {
+                l = idx;
+            } else {
+                r = idx - 1;
+            }
         }
     }
     match container[l] == *key {
