@@ -1,5 +1,3 @@
-use std::mem::swap;
-
 /// Insertion sort
 ///```
 /// use librualg::sort::insertion_sort;
@@ -15,13 +13,17 @@ pub fn insertion_sort<T>(src: &mut [T]) where T:Ord + Copy {
         let ptr = &mut src[0] as *mut T;
         unsafe {
             while j > 0 && *ptr.offset(j as isize) < *ptr.offset(j as isize - 1) {
-                let value = *ptr.offset(j as isize);
-                *ptr.offset(j as isize) = *ptr.offset(j as isize - 1);
-                *ptr.offset(j as isize - 1) = value;
+                swap(ptr.offset(j as isize), ptr.offset(j as isize - 1));
                 j -= 1;
             }
         }
     }
+}
+
+unsafe fn swap<T:Ord + Copy>(a: *mut T, b: *mut T) {
+    let value = *a;
+    *a = *b;
+    *b = value;
 }
 
 #[test]
